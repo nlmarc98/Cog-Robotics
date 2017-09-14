@@ -14,3 +14,21 @@ public class Main {
 
 	}
 }
+
+
+package nl.ru.ai.MMJV;
+
+import lejos.robotics.subsumption.Arbitrator;
+import lejos.robotics.subsumption.Behavior;
+
+public class Main2 {	
+	
+	public static void main(String[] args) {
+		SampleRetrieval sr = new SampleRetrieval();
+		Filter sample = new Filter(sr);
+		Behavior b1 = new Race(sample);
+		Behavior [] bArray = {b1};
+	    Arbitrator arby = new Arbitrator(bArray);
+	    arby.start();
+	}
+}
