@@ -1,0 +1,26 @@
+
+public class Filter {
+	private static final int NUMBER_OF_SAMPLES = 100;
+	public SampleRetrieval sample;
+
+	public Filter(SampleRetrieval s) {
+		this.sample = s;
+	}
+
+
+	public float getLeftLightValue() {
+		float sum = 0;
+		for (int i = 0;  i< NUMBER_OF_SAMPLES; i++) {
+			sum += sample.getLeftLightSample()[0];
+		}
+		return sum / NUMBER_OF_SAMPLES;
+	}
+	
+	public float getRightLightValue() {
+		float sum = 0;
+		for (int i = 0;  i< NUMBER_OF_SAMPLES; i++) {
+			sum += sample.getRightLightSample()[0];
+		}
+		return sum / NUMBER_OF_SAMPLES;
+	}
+}
