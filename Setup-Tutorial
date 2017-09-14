@@ -1,0 +1,79 @@
+Tutorial setting up USB connection in Windows 10
+
+1). Download Eclipse and JDK 1.8
+
+2). Open "leJOS_EV3_0.9.0-beta_win32_setup.exe" and install
+
+3). Unpack "jce_policy-8.zip"
+
+4). Copy the .JAR files, and place them in C:\Program Files\Java\jdk1.8.0_91\jre\lib\security
+    When prompted with "do you want to replace" click yes
+    **IF YOU HAVE MULTIPLE JDK/JRE, REPLACE THE FILE IN ALL JDK/JRE!**
+
+5). Install plug in
+    
+	5.1). In Eclipse go to help > install new software > add
+    		Name: ev3
+    		Location: http://lejos.sourceforge.net/tools/eclipse/plugin/ev3	
+	5.2). Click OK	
+	5.3). Click on "leJOS EV3 Support" **MAY TAKE A WHILE FOR IT POPS UP, BE PATIENT**
+	5.4). Keep clicking "next"/"finish" until its done
+
+6). Create leJOS project
+	file > new > project > LeJOS EV3
+
+7). Adjust Project Properties	
+	7.1). Go to Project > Properties	
+	7.2). Go to "Java Compiler"
+	7.3). Click on "Enable Project Specific Settings"
+	7.4). Change 1.8 to 1.7 (click on 1.8 to the right to get a drop down menu)
+	7.5). OK > Yes
+
+
+8). Adjust Window Preferences
+	8.1). Window > Preferences
+	8.2). Go to leJOS EV3
+	8.3). Click on "Connect to named brick" and type "10.0.1.1"
+	8.4). Click OK
+
+9). Connect the Brick to your Computer
+
+10). Open Device manager
+
+11). Find your Brick (under Ports, it is recognized as "COM")
+
+12). Right click the device, properties > Driver > Update Driver
+
+13). Click "Search Automatically for updated driver software"
+
+There are 2 possible outcomes (depends per PC)
+
+Outcome 1: The driver has been updated, and is now seen as RNDIS device
+Outcome 2: The window shows "The best driver software for your device is already installed"
+
+If you get Outcome 1, go to step 21
+If you get Outcome 2, follow the following steps
+
+14). Close all windows opened after you opened Device Manager
+
+15). Unpack "RPI Driver OTG"
+
+16). Go back to Device manager > Your Brick > Properties > Driver > Update Driver
+
+17). Click "Browse my computer for driver software"
+
+18). Click "Browse..." and locate the map where you unpacked the file "PRI Driver OTG"
+
+19). Click "next"
+
+20). Wait until the driver is installed, click "ok" or "yes" until this is done
+
+21). Open command prompt (windows key + r, type "cmd" and hit enter)
+
+22). Type "ping 10.0.1.1"
+
+23). If you dont see "Request timed out", your brick has succesfully been connected **MAKE SURE THE BRICK IS ON**
+
+If there are any problems, you may have misunderstood a step, or your pc has a special case. Come see the TA's for more help
+
+
