@@ -1,0 +1,16 @@
+package nl.ru.ai.marc;
+
+import lejos.robotics.subsumption.Arbitrator;
+import lejos.robotics.subsumption.Behavior;
+
+public class Main {
+	public static void main(String[] args) throws Exception {
+		SampleRetrieval sr = new SampleRetrieval();
+		Filter sample = new Filter(sr);
+		Behavior b1 = new DriveForward(); // random behavior class
+		Behavior[] bArray = { b1 };
+		Arbitrator arby = new Arbitrator(bArray);
+		arby.start();
+
+	}
+}
