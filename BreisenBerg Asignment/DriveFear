@@ -1,17 +1,44 @@
+import lejos.hardware.motor.Motor;
 import lejos.robotics.subsumption.Behavior;
 
 public class DriveFear implements Behavior {
 
+	private Filter filter;
+	
+	public DriveFear(Filter sample) {
+		this.filter = sample;
+		
+	}
+	
 	@Override
 	public boolean takeControl() {
-		// TODO Auto-generated method stub
-		return false;
+		return true;
 	}
 
 	@Override
 	public void action() {
-		// TODO Auto-generated method stub
-		
+		//A = links
+		//C = rechts
+		float leftLightIntensity;
+		float rightLightIntensity;
+		Motor.A.forward();
+		Motor.C.forward();
+		while(true) {
+			leftLightIntensity = filter.getLeftLightValue();
+			rightLightIntensity = filter.getRightLightValue();
+			if (leftLightIntensity < rightLightIntensity) {
+				Motor.A.setSpeed(200);
+				Motor.C.setSpeed(300);
+			}
+			else if (leftLightIntensity > rightLightIntensity) {
+				Motor.A.setSpeed(300);
+				Motor.C.setSpeed(200);
+			}
+			else { 
+				Motor.A.setSpeed(300);
+				Motor.C.setSpeed(300);
+			}
+		}
 	}
 
 	@Override
