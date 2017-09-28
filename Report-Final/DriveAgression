@@ -1,0 +1,56 @@
+package nl.ru.ai.marc;
+
+import lejos.hardware.motor.Motor;
+import lejos.robotics.subsumption.Behavior;
+
+public class DriveAgression implements Behavior {
+
+	private Filter filter;
+	//private boolean suppressed = false;
+
+	public DriveAgression(Filter sample) {
+		this.filter = sample;
+
+	}
+
+	@Override
+	public boolean takeControl() {
+		return true;
+	}
+
+	@Override
+	public void action() {
+		// A = links
+		// C = rechts
+		float leftLightIntensity;
+		float rightLightIntensity;
+		
+		while (true) {
+			System.out.println("filtering");
+			leftLightIntensity = filter.getLeftLightValue();
+			rightLightIntensity = filter.getRightLightValue();
+			System.out.println("Done filtering");
+			if (leftLightIntensity > rightLightIntensity) {
+				System.out.println("Going left.");
+				Motor.A.setSpeed(100+leftLightIntensity*100);
+				Motor.C.setSpeed(300+rightLightIntensity*100);
+				Motor.A.forward();
+				Motor.C.forward();
+				
+			} else if (leftLightIntensity < rightLightIntensity) {
+				System.out.println("Going right.");
+				Motor.A.setSpeed(300+leftLightIntensity*100);
+				Motor.C.setSpeed(100+leftLightIntensity*100);
+				Motor.A.forward();
+				Motor.C.forward();
+			}
+		}
+	}
+
+	@Override
+	public void suppress() {
+		// TODO Auto-generated method stub
+
+	}
+
+}
