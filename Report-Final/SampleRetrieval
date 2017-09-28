@@ -1,0 +1,54 @@
+package nl.ru.ai.marc;
+
+import lejos.hardware.port.Port;
+import lejos.hardware.port.SensorPort;
+import lejos.hardware.sensor.EV3ColorSensor;
+import lejos.hardware.sensor.EV3UltrasonicSensor;
+import lejos.robotics.Color;
+import lejos.robotics.SampleProvider;
+
+import lejos.hardware.ev3.LocalEV3;
+import lejos.hardware.port.Port;
+import lejos.hardware.port.SensorPort;
+import lejos.hardware.sensor.EV3ColorSensor;
+import lejos.hardware.sensor.EV3UltrasonicSensor;
+import lejos.robotics.Color;
+import lejos.robotics.SampleProvider;
+
+public class SampleRetrieval {
+	private EV3ColorSensor leftColorSensor;
+	private EV3ColorSensor rightColorSensor;
+
+	private SampleProvider leftLightProvider;
+	private SampleProvider rightLightProvider;
+
+	private float[] leftLightSample;
+	private float[] rightLightSample;
+
+	public SampleRetrieval() {
+		Port leftSensorPort = LocalEV3.get().getPort("S2");
+		Port rightSensorPort = LocalEV3.get().getPort("S4");
+
+		leftColorSensor = new EV3ColorSensor(leftSensorPort);
+		rightColorSensor = new EV3ColorSensor(rightSensorPort);
+
+		leftLightProvider = leftColorSensor.getAmbientMode();
+		rightLightProvider = rightColorSensor.getAmbientMode();
+
+		leftLightSample = new float[leftColorSensor.sampleSize()];
+		rightLightSample = new float[rightColorSensor.sampleSize()];
+	}
+
+	public float[] getLeftLightSample() {
+		leftColorSensor.setFloodlight(true);
+		leftLightProvider.fetchSample(leftLightSample, 0);
+		return leftLightSample;
+	}
+
+	public float[] getRightLightSample() {
+		rightColorSensor.setFloodlight(true);
+		rightLightProvider.fetchSample(rightLightSample, 0);
+		return rightLightSample;
+	}
+
+}
