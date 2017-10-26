@@ -199,7 +199,7 @@ RobotInfo = [
 simInfo = {
   maxSteps: 20000,  // maximal number of simulation steps to run
   airDrag: 0.1,  // "air" friction of enviroment; 0 is vacuum, 0.9 is molasses
-  boxFric: 0.045, //
+  boxFric: 0.045, // 
   boxMass: 0.11,  // mass of boxes
   boxSize: 20,  // size of the boxes, in pixels
   robotSize: 2*7,  // robot radius, in pixels
@@ -547,24 +547,17 @@ function getRandomInt(min, max) {
 
 function robotMove(robot) {
 // This function is called each timestep and should be used to move the robots
-	// good behavior:
-	//drive(robot,0.0002);
-	//rotate(robot,0.0001);
-	
 	drive(robot,0.0001);
 	distL = getSensorValById(robot,'distL');
 	distR = getSensorValById(robot,'distR');
 	distM = getSensorValById(robot,'distM');
 	if(distL < distR){
-		//rotate(robot,-0.01);
 		rotate(robot,-0.01);
 	}
 	else {
-		//rotate(robot,0);
 	}
 	
 	if(distM < 2){
-		//rotate(robot,0.25);
 		// Robot is in front of a wall ( or block ).
 		// Randomly chooses to turn left or right.
 		var random = getRandomInt(0,10);
