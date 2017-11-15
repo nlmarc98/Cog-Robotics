@@ -27,7 +27,7 @@ RobotInfo = [
      {sense: senseDistance,  // function handle, determines type of sensor
       minVal: 0,  // minimum detectable distance, in pixels
       maxVal: 50,  // maximum detectable distance, in pixels
-      attachAngle: Math.PI/4,  // where the sensor is mounted on robot body
+      attachAngle: Math.PI/2,  // where the sensor is mounted on robot body
       lookAngle: 0,  // direction the sensor is looking (relative to center-out)
       id: 'distR',  // a unique, arbitrary ID of the sensor, for printing/debugging
       color: [150, 0, 0],  // sensor color [in RGB], to distinguish them
@@ -67,7 +67,7 @@ simInfo = {
   bayScale: 3,  // scale within 2nd, inset canvas showing robot in it's "bay"
   doContinue: true,  // whether to continue simulation, set in HTML
   debugSensors: true,  // plot sensor rays and mark detected objects
-  debugMouse: false,  // allow dragging any object with the mouse
+  debugMouse: true,  // allow dragging any object with the mouse
   engine: null,  // MatterJS 2D physics engine
   world: null,  // world object (composite of all objects in MatterJS engine)
   runner: null,  // object for running MatterJS engine
@@ -323,11 +323,12 @@ function senseColor(){
 		this.value = "b";
 	}
 	else {
-		this.value = null;
+		this.value = "n";
 	}
   }
   else {
 	  // no bodies in front of the sensor, return nothing.
+	  this.value = "n";
   }
 };
 
@@ -576,7 +577,7 @@ function robotMove(robot) {
   const distL = getSensorValById(robot, 'distL'),
         distR = getSensorValById(robot, 'distR'),
 		distM = getSensorValById(robot, 'distM');
-	if (distM == "r"){
+	if (distM == "r") {
 			robot.rotate(robot,-0.015);
 	}
 	else {
