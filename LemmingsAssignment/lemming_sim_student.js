@@ -28,33 +28,33 @@ RobotInfo = [
       minVal: 0,  // minimum detectable distance, in pixels
       maxVal: 50,  // maximum detectable distance, in pixels
       attachAngle: Math.PI/2,  // where the sensor is mounted on robot body
-      lookAngle: 0,  // direction the sensor is looking (relative to center-out)
-      id: 'distR',  // a unique, arbitrary ID of the sensor, for printing/debugging
+      lookAngle: -Math.PI/3,  // direction the sensor is looking (relative to center-out)
+      id: 'distWall',  // a unique, arbitrary ID of the sensor, for printing/debugging
+      color: [150, 0, 0],  // sensor color [in RGB], to distinguish them
+      parent: null,  // robot object the sensor is attached to, added by InstantiateRobot
+      value: null  // sensor value, i.e. distance in pixels; updated by sense() function
+     },
+	  {sense: senseColor,  // function handle, determines type of sensor
+      minVal: 0,  // minimum detectable distance, in pixels
+      maxVal: 50,  // maximum detectable distance, in pixels
+      attachAngle: Math.PI/2,  // where the sensor is mounted on robot body
+      lookAngle: -Math.PI/3,  // direction the sensor is looking (relative to center-out)
+      id: 'colorWall',  // a unique, arbitrary ID of the sensor, for printing/debugging
       color: [150, 0, 0],  // sensor color [in RGB], to distinguish them
       parent: null,  // robot object the sensor is attached to, added by InstantiateRobot
       value: null  // sensor value, i.e. distance in pixels; updated by sense() function
      },
      // define another sensor
-     {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: -Math.PI/4,
-      lookAngle: 0, id: 'distL', color: [0, 150, 0], parent: null, value: null
+     {sense: senseColor, minVal: 0, maxVal: 10, attachAngle: -Math.PI/4,
+      lookAngle: Math.PI/2, id: 'colorBox', color: [255, 0, 0], parent: null, value: null
      },
-	 {sense: senseColor,  // function handle, determines type of sensor
-      minVal: 0,  // minimum detectable distance, in pixels. This is still used to detect objects.
-      maxVal: 50,  // maximum detectable distance, in pixels. This is still used to detect objects. 
-      attachAngle: 0,  // where the sensor is mounted on robot body
-      lookAngle: 0,  // direction the sensor is looking (relative to center-out)
-      id: 'distM',  // a unique, arbitrary ID of the sensor, for printing/debugging
-      color: [0, 150, 0],  // sensor color [in RGB], to distinguish them
-      parent: null,  // robot object the sensor is attached to, added by InstantiateRobot
-      value: null  // sensor value, i.e. color of object in front. 0b stands for blue, 0r stands for red, 0w stands for white; updated by sense() function
-     }
    ]
   }
 ];
 
 // Simulation settings; please change anything that you think makes sense.
 simInfo = {
-  maxSteps: 50000,  // maximal number of simulation steps to run
+  maxSteps: 1,  // maximal number of simulation steps to run
   airDrag: 0.1,  // "air" friction of enviroment; 0 is vacuum, 0.9 is molasses
   boxFric: 0.005, // friction between boxes during collisions
   boxMass: 0.01,  // mass of boxes
@@ -517,7 +517,7 @@ function loadFromSVG() {
         data = svg.contentDocument;
 
   jQuery(data).find('path').each(function(_, path) {
-    var points = Matter.Svg.pathToVertices(path, 41);
+    var points = Matter.Svg.pathToVertices(path, 30);
     vertexSets.push(Matter.Vertices.scale(points, 0.2, 0.2));
   });
 
@@ -574,21 +574,13 @@ function getSensorValById(robot, id) {
 
 function robotMove(robot) {
   // TODO: Define Lemming program here.
-  const distL = getSensorValById(robot, 'distL'),
-        distR = getSensorValById(robot, 'distR'),
-		distM = getSensorValById(robot, 'distM');
-	if (distM == "r") {
-			robot.rotate(robot,-0.015);
-	}
-	else {
-		robot.drive(robot,0.0002);
-		if (distL < distR){
-			robot.rotate(robot, +0.005);
-		}
-		else {
-			robot.rotate(robot, -0.005);
-		}
-	}
+  const colorWall = getSensorValById(robot, 'colorWall'),
+        distWall = getSensorValById(robot, 'distWall'),
+		colorBox = getSensorValById(robot, 'colorBox');
+		
+	robot.drive(robot,0.0005);
+	robot.rotate(robot,0.0005);
+	console.log(colorWall + " " + distWall + " " + colorBox);
 
 };
 
