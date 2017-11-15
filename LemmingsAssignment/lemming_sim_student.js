@@ -45,8 +45,8 @@ RobotInfo = [
       value: null  // sensor value, i.e. distance in pixels; updated by sense() function
      },
      // define another sensor
-     {sense: senseColor, minVal: 0, maxVal: 10, attachAngle: -Math.PI/4,
-      lookAngle: Math.PI/2, id: 'colorBox', color: [255, 0, 0], parent: null, value: null
+     {sense: senseColor, minVal: 0, maxVal: 20, attachAngle: -Math.PI/3,
+      lookAngle: Math.PI/1.4, id: 'colorBox', color: [255, 0, 0], parent: null, value: null
      },
    ]
   }
@@ -54,7 +54,7 @@ RobotInfo = [
 
 // Simulation settings; please change anything that you think makes sense.
 simInfo = {
-  maxSteps: 1,  // maximal number of simulation steps to run
+  maxSteps: 50000,  // maximal number of simulation steps to run
   airDrag: 0.1,  // "air" friction of enviroment; 0 is vacuum, 0.9 is molasses
   boxFric: 0.005, // friction between boxes during collisions
   boxMass: 0.01,  // mass of boxes
@@ -577,10 +577,34 @@ function robotMove(robot) {
   const colorWall = getSensorValById(robot, 'colorWall'),
         distWall = getSensorValById(robot, 'distWall'),
 		colorBox = getSensorValById(robot, 'colorBox');
-		
-	robot.drive(robot,0.0005);
-	robot.rotate(robot,0.0005);
 	console.log(colorWall + " " + distWall + " " + colorBox);
+	robot.drive(robot,0.0002);	
+	if (colorBox == "n") {
+		robot.rotate(robot,0.001);
+	}
+	else if(colorBox == "b") {
+		robot.rotate(robot,0.001);
+	}
+	else if(colorBox == "r") {
+		robot.rotate(robot,-0.025);
+	}
+
+	if(colorWall == "w" && distWall < 40) {
+		if (colorBox == "n" ){
+			robot.drive(robot,-0.005);
+			robot.rotate(robot,-0.1);
+		}
+		
+		else if (colorBox == "b" ){
+			robot.rotate(robot,-0.005);
+		}
+		else if (colorBox == "r") {
+			robot.rotate(robot,0.001);
+		}
+		else if (colorBox == "w") {
+			robot.rotate(robot,0.01);
+		}
+	}
 
 };
 
