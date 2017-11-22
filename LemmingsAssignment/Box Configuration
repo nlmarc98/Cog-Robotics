@@ -1,0 +1,29 @@
+
+/* Add a bunch of boxes in a neat grid. */
+  var nmbr = 1; 
+ 
+  function getBox(x, y) {
+    // flip coin for red vs blue and add rgb
+    nmbr = nmbr+1;  
+    if (nmbr % 2 == 0){
+      color = [0, 0, 200];
+    }
+    else {
+      color = [200, 0, 0];
+    }
+    box = Matter.Bodies.rectangle(x, y, simInfo.boxSize, simInfo.boxSize,
+                                  {frictionAir: simInfo.airDrag,
+                                   friction: simInfo.boxFric,
+                                   mass: simInfo.boxMass,
+                                   role: 'box',
+                                   color: color});
+    return box;
+  };
+
+  const startX = 60, startY = 60,
+        nBoxX = 7, nBoxY = 7,
+        gapX = 30, gapY = 30,
+        stack = Matter.Composites.stack(startX, startY,
+                                        nBoxX, nBoxY,
+                                        gapX, gapY, getBox);
+  Matter.World.add(simInfo.world, stack);
