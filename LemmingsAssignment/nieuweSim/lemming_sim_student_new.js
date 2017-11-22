@@ -20,21 +20,13 @@
 // Description of robot(s), and attached sensor(s) used by InstantiateRobot()
 RobotInfo = [
   {body: null,  // for MatterJS body, added by InstantiateRobot()
-   color: [255, 250, 255],  // color of the robot shape
+   color: [255, 0, 0],  // color of the robot shape
    init: {x: 50, y: 50, angle: 0},  // initial position and orientation
    sensors: [  // define an array of sensors on the robot
      // define one sensor
-     {sense: senseDistance,  // function handle, determines type of sensor
-      minVal: 0,  // minimum detectable distance, in pixels
-      maxVal: 50,  // maximum detectable distance, in pixels
-      attachAngle: Math.PI/30,  // sensor's angle on robot body
-      attachRadius: 27, // sensor's distance from robot body center
-      lookAngle: 0,  // direction the sensor is looking (relative to center-out)
-      id: 'dist_all',  // a unique, arbitrary ID of the sensor, for printing/debugging
-      color: [0, 0, 0, 50],  // sensor color [in RGBA], to distinguish them
-      parent: null,  // robot object the sensor is attached to, added by InstantiateRobot
-      value: null,  // sensor value, i.e. distance in pixels; updated by sense() function
-      valueStr: ''  // sensor value for printing on screen/writing to HTML
+     {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: Math.PI/30, 
+      attachRadius: 27, lookAngle: 0, id: 'dist_all', color: [0, 0, 0, 50], 
+      parent: null, value: null, valueStr: '' 
      },
      // define distance sensor that doesn't see boxes (e.g. because it's "elevated")
      {sense: senseDistance_noBox, minVal: 0, maxVal: 50, attachAngle: Math.PI/30,
@@ -45,6 +37,30 @@ RobotInfo = [
      {sense: senseRobotAngle, id: 'gyro', parent: null, value: null, valueStr: ''},
      // TODO: define a color sensor
      {sense: senseColor, minVal: 0, maxVal: 10, attachAngle: -0.5585993153435624 ,
+      attachRadius: 5, lookAngle: 70.003, id: 'color_gripper', color: [0, 255, 0, 50],
+      parent: null, value: null, valueStr: ''
+     },
+	 {sense: senseColor, minVal: 0, maxVal: 50, attachAngle: Math.PI/30,
+      attachRadius: 27, lookAngle: 0, id: 'color_all', color: [0, 255, 0, 50],
+      parent: null, value: null, valueStr: ''
+     }
+   ]
+  },
+// Second Robot:
+  {body: null,
+   color: [0, 255, 0],
+   init: {x: 50, y: 150, angle: 0},
+   sensors: [ 
+     {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: Math.PI/30, 
+      attachRadius: 27, lookAngle: 0, id: 'dist_all', color: [0, 0, 0, 50], 
+      parent: null, value: null, valueStr: '' 
+     },
+     {sense: senseDistance_noBox, minVal: 0, maxVal: 50, attachAngle: Math.PI/30,
+      attachRadius: 27, lookAngle: 0, id: 'dist_noBox', color: [100, 100, 100, 50],
+      parent: null, value: null, valueStr: ''
+     },
+     {sense: senseRobotAngle, id: 'gyro', parent: null, value: null, valueStr: ''},
+     {sense: senseColor, minVal: 0, maxVal: 10, attachAngle: -0.5585993153435624 ,
       attachRadius: 5, lookAngle: 71, id: 'color_gripper', color: [0, 255, 0, 50],
       parent: null, value: null, valueStr: ''
      },
@@ -53,7 +69,31 @@ RobotInfo = [
       parent: null, value: null, valueStr: ''
      }
    ]
-  }
+  },
+//Third Robot:
+  {body: null,
+   color: [0, 0, 255], 
+   init: {x: 50, y: 250, angle: 0}, 
+   sensors: [ 
+     {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: Math.PI/30, 
+      attachRadius: 27, lookAngle: 0, id: 'dist_all', color: [0, 0, 0, 50], 
+      parent: null, value: null, valueStr: '' 
+     },
+     {sense: senseDistance_noBox, minVal: 0, maxVal: 50, attachAngle: Math.PI/30,
+      attachRadius: 27, lookAngle: 0, id: 'dist_noBox', color: [100, 100, 100, 50],
+      parent: null, value: null, valueStr: ''
+     },
+     {sense: senseRobotAngle, id: 'gyro', parent: null, value: null, valueStr: ''},
+     {sense: senseColor, minVal: 0, maxVal: 10, attachAngle: -0.5585993153435624 ,
+      attachRadius: 5, lookAngle: 71, id: 'color_gripper', color: [0, 255, 0, 50],
+      parent: null, value: null, valueStr: ''
+     },
+	 {sense: senseColor, minVal: 0, maxVal: 50, attachAngle: Math.PI/30,
+      attachRadius: 27, lookAngle: 0, id: 'color_all', color: [0, 255, 0, 50],
+      parent: null, value: null, valueStr: ''
+     }
+   ]
+  }  
 ];
 
 // Simulation settings; please change anything that you think makes sense.
@@ -110,11 +150,13 @@ function init() {  // called once when loading HTML file
         wall_ri = getWall(width-5, height/2, 5, height-15);
   Matter.World.add(simInfo.world, [wall_lo, wall_hi, wall_le, wall_ri]);
 
-  /* Add a bunch of boxes in a neat grid. */
+/* Add a bunch of boxes in a neat grid. */
+  var nmbr = 1; 
+ 
   function getBox(x, y) {
     // flip coin for red vs blue and add rgb
-    colFlag = Math.round(Math.random());  // random 0,1 variable for box color
-    if (colFlag == 1 ){
+    nmbr = nmbr+1;  
+    if (nmbr % 2 == 0){
       color = [0, 0, 200];
     }
     else {
@@ -129,14 +171,14 @@ function init() {  // called once when loading HTML file
     return box;
   };
 
-  const startX = 100, startY = 100,
-        nBoxX = 5, nBoxY = 5,
-        gapX = 40, gapY = 30,
+  const startX = 60, startY = 60,
+        nBoxX = 7, nBoxY = 7,
+        gapX = 30, gapY = 30,
         stack = Matter.Composites.stack(startX, startY,
                                         nBoxX, nBoxY,
                                         gapX, gapY, getBox);
   Matter.World.add(simInfo.world, stack);
-
+  
   /* Add debugging mouse control for dragging objects. */
   if (simInfo.debugMouse){
     const mouseConstraint = Matter.MouseConstraint.create(simInfo.engine,
@@ -156,8 +198,8 @@ function init() {  // called once when loading HTML file
   Matter.Events.on(simInfo.engine, 'tick', simStep);
 
   /* Create robot(s). */
-  setRobotNumber(1);  // requires defined simInfo.world
-  loadBay(robots[0]);
+  setRobotNumber(3);  // requires defined simInfo.world
+  loadBay(robots[2]);
 
 };
 
