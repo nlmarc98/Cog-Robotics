@@ -25,75 +25,32 @@ RobotInfo = [
    sensors: [  // define an array of sensors on the robot
      // define one sensor
      {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: Math.PI/30, 
-      attachRadius: 27, lookAngle: 0, id: 'dist_all', color: [0, 0, 0, 50], 
+      attachRadius: 27, lookAngle: 0, id: 'frontS_dist_all', color: [0, 0, 0, 50], 
       parent: null, value: null, valueStr: '' 
      },
      // define distance sensor that doesn't see boxes (e.g. because it's "elevated")
      {sense: senseDistance_noBox, minVal: 0, maxVal: 50, attachAngle: Math.PI/30,
-      attachRadius: 27, lookAngle: 0, id: 'dist_noBox', color: [100, 100, 100, 50],
+      attachRadius: 27, lookAngle: 0, id: 'frontS_dist_noBox', color: [100, 100, 100, 50],
       parent: null, value: null, valueStr: ''
      },
      // define a gyroscope/angle sensor
      {sense: senseRobotAngle, id: 'gyro', parent: null, value: null, valueStr: ''},
      // TODO: define a color sensor
-     {sense: senseColor, minVal: 0, maxVal: 10, attachAngle: -0.5585993153435624 ,
+     {sense: senseColor, minVal: 0, maxVal: 15, attachAngle: -0.5585993153435624 ,
       attachRadius: 5, lookAngle: 70.003, id: 'color_gripper', color: [0, 255, 0, 50],
       parent: null, value: null, valueStr: ''
      },
 	 {sense: senseColor, minVal: 0, maxVal: 50, attachAngle: Math.PI/30,
-      attachRadius: 27, lookAngle: 0, id: 'color_all', color: [0, 255, 0, 50],
+      attachRadius: 27, lookAngle: 0, id: 'frontS_color_all', color: [0, 255, 0, 50],
+      parent: null, value: null, valueStr: ''
+     },
+	 {sense: senseColor_noBox, minVal: 0, maxVal: 50, attachAngle: Math.PI/30,
+      attachRadius: 27, lookAngle: 0, id: 'frontS_color_noBox', color: [0, 255, 0, 50],
       parent: null, value: null, valueStr: ''
      }
    ]
-  },
-// Second Robot:
-  {body: null,
-   color: [0, 255, 0],
-   init: {x: 50, y: 150, angle: 0},
-   sensors: [ 
-     {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: Math.PI/30, 
-      attachRadius: 27, lookAngle: 0, id: 'dist_all', color: [0, 0, 0, 50], 
-      parent: null, value: null, valueStr: '' 
-     },
-     {sense: senseDistance_noBox, minVal: 0, maxVal: 50, attachAngle: Math.PI/30,
-      attachRadius: 27, lookAngle: 0, id: 'dist_noBox', color: [100, 100, 100, 50],
-      parent: null, value: null, valueStr: ''
-     },
-     {sense: senseRobotAngle, id: 'gyro', parent: null, value: null, valueStr: ''},
-     {sense: senseColor, minVal: 0, maxVal: 10, attachAngle: -0.5585993153435624 ,
-      attachRadius: 5, lookAngle: 71, id: 'color_gripper', color: [0, 255, 0, 50],
-      parent: null, value: null, valueStr: ''
-     },
-	 {sense: senseColor, minVal: 0, maxVal: 50, attachAngle: Math.PI/30,
-      attachRadius: 27, lookAngle: 0, id: 'color_all', color: [0, 255, 0, 50],
-      parent: null, value: null, valueStr: ''
-     }
-   ]
-  },
-//Third Robot:
-  {body: null,
-   color: [0, 0, 255], 
-   init: {x: 50, y: 250, angle: 0}, 
-   sensors: [ 
-     {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: Math.PI/30, 
-      attachRadius: 27, lookAngle: 0, id: 'dist_all', color: [0, 0, 0, 50], 
-      parent: null, value: null, valueStr: '' 
-     },
-     {sense: senseDistance_noBox, minVal: 0, maxVal: 50, attachAngle: Math.PI/30,
-      attachRadius: 27, lookAngle: 0, id: 'dist_noBox', color: [100, 100, 100, 50],
-      parent: null, value: null, valueStr: ''
-     },
-     {sense: senseRobotAngle, id: 'gyro', parent: null, value: null, valueStr: ''},
-     {sense: senseColor, minVal: 0, maxVal: 10, attachAngle: -0.5585993153435624 ,
-      attachRadius: 5, lookAngle: 71, id: 'color_gripper', color: [0, 255, 0, 50],
-      parent: null, value: null, valueStr: ''
-     },
-	 {sense: senseColor, minVal: 0, maxVal: 50, attachAngle: Math.PI/30,
-      attachRadius: 27, lookAngle: 0, id: 'color_all', color: [0, 255, 0, 50],
-      parent: null, value: null, valueStr: ''
-     }
-   ]
-  }  
+  }
+
 ];
 
 // Simulation settings; please change anything that you think makes sense.
@@ -198,8 +155,8 @@ function init() {  // called once when loading HTML file
   Matter.Events.on(simInfo.engine, 'tick', simStep);
 
   /* Create robot(s). */
-  setRobotNumber(3);  // requires defined simInfo.world
-  loadBay(robots[2]);
+  setRobotNumber(1);  // requires defined simInfo.world
+  loadBay(robots[0]);
 
 };
 
@@ -742,17 +699,18 @@ function robotMove(robot) {
  *   – If it carries a red block it should turn right to keep the block.
  */
 
-  const dist_all = getSensorValById(robot, 'dist_all'),
-        dist_noBox = getSensorValById(robot, 'dist_noBox'),
+  const frontS_dist_all = getSensorValById(robot, 'frontS_dist_all'),
+        frontS_dist_noBox = getSensorValById(robot, 'frontS_dist_noBox'),
 		color_gripper = getSensorValById(robot, 'color_gripper'),
-		color_all = getSensorValById(robot, 'color_all');
+		frontS_color_all = getSensorValById(robot, 'frontS_color_all'),
+		frontS_color_noBox = getSensorValById(robot, 'frontS_color_noBox');
 		defaultRotate = 0.002;
 		
 
   robot.drive(robot, 0.0002);
   robot.rotate(robot, defaultRotate);
   
-  if (color_all == "r" || color_all == "b"){
+  if (frontS_color_all == "r" || frontS_color_all == "b"){
 	  if (color_gripper == "n") {
 		  robot.rotate(robot,0);
 	  }
@@ -760,10 +718,10 @@ function robotMove(robot) {
 		  robot.rotate(robot, defaultRotate);
 	  }
 	  else if (color_gripper == "r") {
-		  robot.rotate(robot, -20*defaultRotate);
+		  robot.rotate(robot, -40*defaultRotate);
 	  }
   }
-  else if (color_all == "w" && dist_noBox < 20) {
+  if (frontS_color_noBox == "w" && frontS_dist_noBox < 40) {
 	  robot.drive(robot,-0.002);
 	  if (color_gripper == "n") {
 		  robot.rotate(robot,-75*defaultRotate);
@@ -775,8 +733,8 @@ function robotMove(robot) {
 		  robot.rotate(robot,defaultRotate);
 	  }
   }
-  //else if (color_all == "n" && color_gripper == "r"){
-	  //robot.rotate(-2*defaultRotate);
+//  if (color_all == "n" && color_gripper == "r"){
+//	  robot.rotate(-10*defaultRotate);
   //}
   
   // A demonstration of a turn every 200th step (as an example of some condition)
