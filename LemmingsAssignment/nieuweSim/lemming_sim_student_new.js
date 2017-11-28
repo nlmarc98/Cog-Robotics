@@ -19,47 +19,89 @@
 
 // Description of robot(s), and attached sensor(s) used by InstantiateRobot()
 RobotInfo = [
+  // First Robot.
   {body: null,  // for MatterJS body, added by InstantiateRobot()
    color: [255, 0, 0],  // color of the robot shape
    init: {x: 50, y: 50, angle: 0},  // initial position and orientation
    sensors: [  // define an array of sensors on the robot
-     // define one sensor
+     // define one distance sensor
      {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: Math.PI/30, 
       attachRadius: 27, lookAngle: 0, id: 'frontS_dist_all', color: [0, 0, 0, 50], 
       parent: null, value: null, valueStr: '' 
      },
-     // define distance sensor that doesn't see boxes (e.g. because it's "elevated")
-     {sense: senseDistance_noBox, minVal: 0, maxVal: 50, attachAngle: Math.PI/30,
-      attachRadius: 27, lookAngle: 0, id: 'frontS_dist_noBox', color: [100, 100, 100, 50],
-      parent: null, value: null, valueStr: ''
-     },
      // define a gyroscope/angle sensor
      {sense: senseRobotAngle, id: 'gyro', parent: null, value: null, valueStr: ''},
-     // TODO: define a color sensor
+     // define one color sensor
      {sense: senseColor, minVal: 0, maxVal: 15, attachAngle: -0.5585993153435624 ,
       attachRadius: 5, lookAngle: 70.003, id: 'color_gripper', color: [0, 255, 0, 50],
       parent: null, value: null, valueStr: ''
      },
+	 // define one color sensor
 	 {sense: senseColor, minVal: 0, maxVal: 50, attachAngle: Math.PI/30,
       attachRadius: 27, lookAngle: 0, id: 'frontS_color_all', color: [0, 255, 0, 50],
       parent: null, value: null, valueStr: ''
+     }
+   ]
+  }, 
+
+  // Second Robot.
+  {body: null,  // for MatterJS body, added by InstantiateRobot()
+   color: [0, 255, 0],  // color of the robot shape
+   init: {x: 200, y: 50, angle: Math.PI/2},  // initial position and orientation
+   sensors: [  // define an array of sensors on the robot
+     // define one distance sensor
+     {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: Math.PI/30, 
+      attachRadius: 27, lookAngle: 0, id: 'frontS_dist_all', color: [0, 0, 0, 50], 
+      parent: null, value: null, valueStr: '' 
      },
-	 {sense: senseColor_noBox, minVal: 0, maxVal: 50, attachAngle: Math.PI/30,
-      attachRadius: 27, lookAngle: 0, id: 'frontS_color_noBox', color: [0, 255, 0, 50],
+     // define a gyroscope/angle sensor
+     {sense: senseRobotAngle, id: 'gyro', parent: null, value: null, valueStr: ''},
+     // define one color sensor
+     {sense: senseColor, minVal: 0, maxVal: 15, attachAngle: -0.5585993153435624 ,
+      attachRadius: 5, lookAngle: 70.003, id: 'color_gripper', color: [0, 255, 0, 50],
+      parent: null, value: null, valueStr: ''
+     },
+	 // define one color sensor
+	 {sense: senseColor, minVal: 0, maxVal: 50, attachAngle: Math.PI/30,
+      attachRadius: 27, lookAngle: 0, id: 'frontS_color_all', color: [0, 255, 0, 50],
+      parent: null, value: null, valueStr: ''
+     }
+   ]
+  }, 
+  // Third Robot.
+  {body: null,  // for MatterJS body, added by InstantiateRobot()
+   color: [0, 0, 255],  // color of the robot shape
+   init: {x: 400, y: 400, angle: -Math.PI},  // initial position and orientation
+   sensors: [  // define an array of sensors on the robot
+     // define one distance sensor
+     {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: Math.PI/30, 
+      attachRadius: 27, lookAngle: 0, id: 'frontS_dist_all', color: [0, 0, 0, 50], 
+      parent: null, value: null, valueStr: '' 
+     },
+     // define a gyroscope/angle sensor
+     {sense: senseRobotAngle, id: 'gyro', parent: null, value: null, valueStr: ''},
+     // define one color sensor
+     {sense: senseColor, minVal: 0, maxVal: 15, attachAngle: -0.5585993153435624 ,
+      attachRadius: 5, lookAngle: 70.003, id: 'color_gripper', color: [0, 255, 0, 50],
+      parent: null, value: null, valueStr: ''
+     },
+	 // define one color sensor
+	 {sense: senseColor, minVal: 0, maxVal: 50, attachAngle: Math.PI/30,
+      attachRadius: 27, lookAngle: 0, id: 'frontS_color_all', color: [0, 255, 0, 50],
       parent: null, value: null, valueStr: ''
      }
    ]
   }
-
 ];
 
 // Simulation settings; please change anything that you think makes sense.
 simInfo = {
+  numRobots: 3,
   maxSteps: 50000,  // maximal number of simulation steps to run
   airDrag: 0.1,  // "air" friction of environment; 0 is vacuum, 0.9 is molasses
   boxFric: 0.005, // friction between boxes during collisions
   boxMass: 0.01,  // mass of boxes
-  boxSize: 20,  // size of the boxes, in pixels
+  boxSize: 10,  // size of the boxes, in pixels
   robotSize: 15, // approximate robot radius, to select by clicking with mouse
   robotMass: 0.4, // robot mass (a.u)
   gravity: 0,  // constant acceleration in Y-direction
@@ -130,7 +172,7 @@ function init() {  // called once when loading HTML file
 
   const startX = 60, startY = 60,
         nBoxX = 7, nBoxY = 7,
-        gapX = 30, gapY = 30,
+        gapX = 40, gapY = 40,
         stack = Matter.Composites.stack(startX, startY,
                                         nBoxX, nBoxY,
                                         gapX, gapY, getBox);
@@ -155,8 +197,8 @@ function init() {  // called once when loading HTML file
   Matter.Events.on(simInfo.engine, 'tick', simStep);
 
   /* Create robot(s). */
-  setRobotNumber(1);  // requires defined simInfo.world
-  loadBay(robots[0]);
+  setRobotNumber(simInfo.numRobots);  // requires defined simInfo.world
+  loadBay(robots[simInfo.numRobots-1]);
 
 };
 
@@ -470,7 +512,6 @@ var color = [0,0,0];
 	function isBlue(color) {
 		return between(color[0],-10,10) && between(color[1],-10,10) && between(color[2],190,210);
 	}
-	
 	if(isWhite(color)){
 		this.value = "w";
 	}
@@ -705,11 +746,9 @@ function robotMove(robot) {
 		frontS_color_all = getSensorValById(robot, 'frontS_color_all'),
 		frontS_color_noBox = getSensorValById(robot, 'frontS_color_noBox');
 		defaultRotate = 0.002;
-		
 
   robot.drive(robot, 0.0002);
   robot.rotate(robot, defaultRotate);
-  
   if (frontS_color_all == "r" || frontS_color_all == "b"){
 	  if (color_gripper == "n") {
 		  robot.rotate(robot,0);
@@ -721,22 +760,19 @@ function robotMove(robot) {
 		  robot.rotate(robot, -40*defaultRotate);
 	  }
   }
-  if (frontS_color_noBox == "w" && frontS_dist_noBox < 40) {
-	  robot.drive(robot,-0.002);
+  else if (frontS_color_all == "w" && frontS_dist_all < 40) {
+	  robot.drive(robot,-0.0015);
 	  if (color_gripper == "n") {
 		  robot.rotate(robot,-75*defaultRotate);
 	  }
 	  else if (color_gripper == "b" ){
-		  robot.rotate(robot, -defaultRotate);
+		  robot.rotate(robot, -10*defaultRotate);
 	  }
 	  else if (color_gripper == "r" ){
 		  robot.rotate(robot,defaultRotate);
 	  }
   }
-//  if (color_all == "n" && color_gripper == "r"){
-//	  robot.rotate(-10*defaultRotate);
-  //}
-  
+ 
   // A demonstration of a turn every 200th step (as an example of some condition)
   //if (!(simInfo.curSteps % 200)) {
     // Attach new closure to robot.move (the function called every sim step),
