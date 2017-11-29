@@ -99,7 +99,7 @@ simInfo = {
   numRobots: 3,
   maxSteps: 50000,  // maximal number of simulation steps to run
   airDrag: 0.1,  // "air" friction of environment; 0 is vacuum, 0.9 is molasses
-  boxFric: 0.005, // friction between boxes during collisions
+  boxFric: 0.001, // friction between boxes during collisions
   boxMass: 0.01,  // mass of boxes
   boxSize: 10,  // size of the boxes, in pixels
   robotSize: 15, // approximate robot radius, to select by clicking with mouse
@@ -745,9 +745,9 @@ function robotMove(robot) {
 		color_gripper = getSensorValById(robot, 'color_gripper'),
 		frontS_color_all = getSensorValById(robot, 'frontS_color_all'),
 		frontS_color_noBox = getSensorValById(robot, 'frontS_color_noBox');
-		defaultRotate = 0.0001;
+		defaultRotate = 0.0002;
 
-  robot.drive(robot, 0.0002);
+  robot.drive(robot, 0.00025);
   robot.rotate(robot, defaultRotate);
   if (frontS_color_all == "r" || frontS_color_all == "b"){
 	  if (color_gripper == "n") {
