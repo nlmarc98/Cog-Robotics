@@ -33,7 +33,7 @@ RobotInfo = [
      {sense: senseRobotAngle, id: 'gyro', parent: null, value: null, valueStr: ''},
      // define one color sensor
      {sense: senseColor, minVal: 0, maxVal: 15, attachAngle: -0.5585993153435624 ,
-      attachRadius: 5, lookAngle: 70.003, id: 'color_gripper', color: [0, 255, 0, 50],
+      attachRadius: 5, lookAngle: 71.003, id: 'color_gripper', color: [0, 255, 0, 50],
       parent: null, value: null, valueStr: ''
      },
 	 // define one color sensor
@@ -745,7 +745,7 @@ function robotMove(robot) {
 		color_gripper = getSensorValById(robot, 'color_gripper'),
 		frontS_color_all = getSensorValById(robot, 'frontS_color_all'),
 		frontS_color_noBox = getSensorValById(robot, 'frontS_color_noBox');
-		defaultRotate = 0.002;
+		defaultRotate = 0.0001;
 
   robot.drive(robot, 0.0002);
   robot.rotate(robot, defaultRotate);
@@ -760,10 +760,10 @@ function robotMove(robot) {
 		  robot.rotate(robot, -40*defaultRotate);
 	  }
   }
-  else if (frontS_color_all == "w" && frontS_dist_all < 40) {
+  else if (frontS_color_all == "w" && frontS_dist_all < 20) {
 	  robot.drive(robot,-0.0015);
 	  if (color_gripper == "n") {
-		  robot.rotate(robot,-75*defaultRotate);
+		  robot.rotate(robot,-140*defaultRotate);
 	  }
 	  else if (color_gripper == "b" ){
 		  robot.rotate(robot, -10*defaultRotate);
