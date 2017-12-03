@@ -27,17 +27,24 @@ RobotInfo = [
      {sense: senseDistance,  // function handle, determines type of sensor
       minVal: 0,  // minimum detectable distance, in pixels
       maxVal: 50,  // maximum detectable distance, in pixels
-      attachAngle: Math.PI/4,  // where the sensor is mounted on robot body
+      attachAngle: Math.PI/30,  // sensor's angle on robot body
+      attachRadius: 14, // sensor's distance from robot body center
       lookAngle: 0,  // direction the sensor is looking (relative to center-out)
-      id: 'distR',  // a unique, arbitrary ID of the sensor, for printing/debugging
-      color: [150, 0, 0],  // sensor color [in RGB], to distinguish them
+      id: 'dist_all',  // a unique, arbitrary ID of the sensor, for printing/debugging
+      color: [0, 0, 0, 50],  // sensor color [in RGBA], to distinguish them
       parent: null,  // robot object the sensor is attached to, added by InstantiateRobot
-      value: null  // sensor value, i.e. distance in pixels; updated by sense() function
+      value: null,  // sensor value, i.e. distance in pixels; updated by sense() function
+      valueStr: ''  // sensor value for printing on screen/writing to HTML
      },
-     // define another sensor
-     {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: -Math.PI/4,
-      lookAngle: 0, id: 'distL', color: [0, 150, 0], parent: null, value: null
-     }
+     // define distance sensor that doesn't see boxes (e.g. because it's "elevated")
+     {sense: senseDistance_noBox, minVal: 0, maxVal: 50, attachAngle: -Math.PI/30,
+      attachRadius: 14, lookAngle: 0, id: 'dist_noBox', color: [100, 100, 100, 50],
+      parent: null, value: null, valueStr: ''
+     },
+     // define a gyroscope/angle sensor
+     {sense: senseRobotAngle, id: 'gyro', parent: null, value: null, valueStr: ''}
+     // TODO: define a color sensor
+     // {sense: senseColor, ... },
    ]
   }
 ];
@@ -45,19 +52,19 @@ RobotInfo = [
 // Simulation settings; please change anything that you think makes sense.
 simInfo = {
   maxSteps: 50000,  // maximal number of simulation steps to run
-  airDrag: 0.1,  // "air" friction of enviroment; 0 is vacuum, 0.9 is molasses
+  airDrag: 0.1,  // "air" friction of environment; 0 is vacuum, 0.9 is molasses
   boxFric: 0.005, // friction between boxes during collisions
   boxMass: 0.01,  // mass of boxes
   boxSize: 20,  // size of the boxes, in pixels
-  robotSize: 13,  // approximate robot radius, in pixels (note the SVG gets scaled down)
+  robotSize: 15, // approximate robot radius, to select by clicking with mouse
   robotMass: 0.4, // robot mass (a.u)
   gravity: 0,  // constant acceleration in Y-direction
   bayRobot: null,  // currently selected robot
   baySensor: null,  // currently selected sensor
   bayScale: 3,  // scale within 2nd, inset canvas showing robot in it's "bay"
   doContinue: true,  // whether to continue simulation, set in HTML
-  debugSensors: false,  // plot sensor rays and mark detected objects
-  debugMouse: false,  // allow dragging any object with the mouse
+  debugSensors: true,  // plot sensor rays and mark detected objects
+  debugMouse: true,  // allow dragging any object with the mouse
   engine: null,  // MatterJS 2D physics engine
   world: null,  // world object (composite of all objects in MatterJS engine)
   runner: null,  // object for running MatterJS engine
@@ -158,6 +165,7 @@ function rotate(robot, torque=0) {
    * Parameters
    *   torque - rotational force to apply to the body.
    *            Try values around +/- 0.005.
+   *            Don't pass Infinity, or robot will leave the arena.
    */
   robot.body.torque = torque;
  };
@@ -168,6 +176,7 @@ function drive(robot, force=0) {
    * Parameters
    *   force - force to apply to the body.
    *           Try values around +/- 0.0005.
+   *           Don't pass Infinity, or robot will leave the arena.
    */
   const orientation = robot.body.angle,
         force_vec = Matter.Vector.create(force, 0),
@@ -175,10 +184,15 @@ function drive(robot, force=0) {
   Matter.Body.applyForce(robot.body, robot.body.position , move_vec);
 };
 
+function senseDistance_noBox(sensor) {
+  senseDistance(sensor, true);
+}
 
-function senseDistance() {
+function senseDistance(sensor, noBoxes=false) {
   /* Distance sensor simulation based on ray casting. Called from sensor
-   * object, returns nothing, updates a new reading into this.value.
+   * object, returns nothing, updates a new reading into sensor.value.
+   *
+   * Parameter noBoxes - whether to ignore boxes in the world.
    *
    * Idea: Cast a ray with a certain length from the sensor, and check
    *       via collision detection if objects intersect with the ray.
@@ -192,20 +206,31 @@ function senseDistance() {
    */
 
   const context = document.getElementById('arenaLemming').getContext('2d');
-  var bodies = Matter.Composite.allBodies(simInfo.engine.world);
+  var bodies = Matter.Composite.allBodies(simInfo.engine.world),
+      bb;
 
-  const robotAngle = this.parent.body.angle,
-        attachAngle = this.attachAngle,
-        rayAngle = robotAngle + attachAngle + this.lookAngle;
+  if (noBoxes) {
+    const bodies_noBoxes = [];
+    for (bb = 0; bb < bodies.length; bb++) {
+      if (bodies[bb].role != 'box') {
+        bodies_noBoxes.push(bodies[bb]);
+      }
+    }
+    bodies = bodies_noBoxes;
+  }
 
-  const rPos = this.parent.body.position,
-        rSize = simInfo.robotSize,
-        startPoint = {x: rPos.x + (rSize+1) * Math.cos(robotAngle + attachAngle),
-                      y: rPos.y + (rSize+1) * Math.sin(robotAngle + attachAngle)};
+  const robotAngle = sensor.parent.body.angle,
+        attachAngle = sensor.attachAngle,
+        attachRadius = sensor.attachRadius,
+        rayAngle = robotAngle + attachAngle + sensor.lookAngle;
+
+  const rPos = sensor.parent.body.position,
+        startPoint = {x: rPos.x + attachRadius*Math.cos(robotAngle+attachAngle),
+                      y: rPos.y + attachRadius*Math.sin(robotAngle+attachAngle)};
 
   function getEndpoint(rayLength) {
-    return {x: rPos.x + (rSize + rayLength) * Math.cos(rayAngle),
-            y: rPos.y + (rSize + rayLength) * Math.sin(rayAngle)};
+    return {x: rPos.x + (attachRadius + rayLength) * Math.cos(rayAngle),
+            y: rPos.y + (attachRadius + rayLength) * Math.sin(rayAngle)};
   };
 
   function sensorRay(bodies, rayLength) {
@@ -241,7 +266,7 @@ function senseDistance() {
 
   // call 1x with full length, and check all bodies in the world;
   // in subsequent calls, only check the bodies resulting here
-  var rayLength = this.maxVal;
+  var rayLength = sensor.maxVal;
   bodies = sensorRay(bodies, rayLength);
   // if some collided, search for maximal ray length without collisions
   if (bodies.length > 0) {
@@ -267,11 +292,11 @@ function senseDistance() {
     context.beginPath();
     context.moveTo(startPoint.x, startPoint.y);
     context.lineTo(endPoint.x, endPoint.y);
-    context.strokeStyle = this.parent.info.color;
-    context.lineWidth = 0.5;
+    context.strokeStyle = convrgb(sensor.color);
+    context.lineWidth = 1.0;
     context.stroke();
     // mark all objects's lines intersecting with the ray
-    for (var bb = 0; bb < bodies.length; bb++) {
+    for (bb = 0; bb < bodies.length; bb++) {
       var vertices = bodies[bb].vertices;
       context.moveTo(vertices[0].x, vertices[0].y);
       for (var vv = 1; vv < vertices.length; vv += 1) {
@@ -283,7 +308,7 @@ function senseDistance() {
   }
 
   // indicate if the sensor exceeded its maximum length by returning infinity
-  if (rayLength > this.maxVal) {
+  if (rayLength > sensor.maxVal) {
     rayLength = Infinity;
   }
   else {
@@ -294,24 +319,62 @@ function senseDistance() {
       return sigma * Math.sqrt(-2 * Math.log(x0)) * Math.cos(2 * Math.PI * x1);
     };
     rayLength = Math.floor(rayLength + gaussNoise(3));
-    rayLength = Matter.Common.clamp(rayLength, this.minVal, this.maxVal);
+    rayLength = Matter.Common.clamp(rayLength, sensor.minVal, sensor.maxVal);
   }
 
-  this.value = rayLength;
+  sensor.value = rayLength;  // for using in program, e.g. robotMove()
+  sensor.valueStr = padnumber(rayLength, 2);  // for printing to screen
 };
+
+function rad2deg(x) {
+  return 180 * x / Math.PI;
+};
+
+function deg2rad(x) {
+  return Math.PI * x / 180;
+};
+
+function boundRadians(x) {
+  return x % (2*Math.PI);
+};
+
+function senseRobotAngle(sensor) {
+  /* Gyroscope sensor based on real angle, compromised with noise. Called with
+   * sensor object, returns nothing, updates a new reading into sensor.value.
+   *
+   * Note that the Radian sensor values are not bounded; it simplifies some
+   * operations, like rotating a given amount, and MatterJS is fine with it.
+   * However, to print the values in an understandable format, they are bounded
+   * between -2*PI and +2*PI, and converted to degrees.
+   */
+
+  const realRobotAngle = sensor.parent.body.angle;  // angle in radians
+
+  // add some noise to the actual values to simulate an unbiased gyroscope
+  function gaussNoise(sigma=Math.PI/45) {
+    const x0 = 1.0 - Math.random();
+    const x1 = 1.0 - Math.random();
+    return sigma * Math.sqrt(-2 * Math.log(x0)) * Math.cos(2 * Math.PI * x1);
+  };
+
+  const noisyRobotAngle = realRobotAngle + gaussNoise();
+  sensor.value = noisyRobotAngle;
+  sensor.valueStr = format(rad2deg(boundRadians(noisyRobotAngle)));
+};
+
 
 function dragSensor(sensor, event) {
   const robotBay = document.getElementById('bayLemming'),
         bCenter = {x: robotBay.width/2,
                    y: robotBay.height/2},
-        rSize = simInfo.robotSize,
+        attachRadius = sensor.info.attachRadius,
         bScale = simInfo.bayScale,
         sSize = sensor.getWidth(),
         mAngle = Math.atan2(  event.mouse.x - bCenter.x,
                             -(event.mouse.y - bCenter.y));
   sensor.info.attachAngle = mAngle;
-  sensor.x = bCenter.x - sSize - bScale * rSize * Math.sin(-mAngle);
-  sensor.y = bCenter.y - sSize - bScale * rSize * Math.cos( mAngle);
+  sensor.x = bCenter.x - sSize - bScale * attachRadius * Math.sin(-mAngle);
+  sensor.y = bCenter.y - sSize - bScale * attachRadius * Math.cos( mAngle);
   repaintBay();
 }
 
@@ -329,18 +392,18 @@ function loadBay(robot) {
   const robotBay = document.getElementById("bayLemming");
   const bCenter = {x: robotBay.width/2,
                    y: robotBay.height/2},
-        rSize = simInfo.robotSize,
         bScale = simInfo.bayScale;
 
   for (var ss = 0; ss < robot.info.sensors.length; ++ss) {
     const curSensor = robot.sensors[ss],
-          attachAngle = curSensor.attachAngle;
+          attachAngle = curSensor.attachAngle,
+          attachRadius = curSensor.attachRadius;
     // put current sensor into global variable, make mouse-interactive
     sensors[ss] = makeInteractiveElement(new SensorGraphics(curSensor),
                                          document.getElementById("bayLemming"));
     const sSize = sensors[ss].getWidth();
-    sensors[ss].x = bCenter.x - sSize - bScale * rSize * Math.sin(-attachAngle);
-    sensors[ss].y = bCenter.y - sSize - bScale * rSize * Math.cos( attachAngle);
+    sensors[ss].x = bCenter.x -sSize -bScale*attachRadius*Math.sin(-attachAngle);
+    sensors[ss].y = bCenter.y -sSize -bScale*attachRadius*Math.cos( attachAngle);
     sensors[ss].onDragging = dragSensor;
     sensors[ss].onDrag = loadSensor;
   }
@@ -394,6 +457,7 @@ function InstantiateRobot(robotInfo) {
   this.drive = drive;
   this.info = robotInfo;
   this.plotRobot = plotRobot;
+  this.move = robotMove;
 
   // add functions getWidth/getHeight for graphics.js & mouse.js,
   // to enable selection by clicking the robot in the arena
@@ -404,36 +468,98 @@ function InstantiateRobot(robotInfo) {
 function robotUpdateSensors(robot) {
   // update all sensors of robot; puts new values into sensor.value
   for (var ss = 0; ss < robot.sensors.length; ss++) {
-    robot.sensors[ss].sense();
+    var sensor = robot.sensors[ss];
+    sensor.sense(sensor);
   }
 };
 
-function getSensorValById(robot, id) {
+function getSensorValById(robot, sensor_id) {
   for (var ss = 0; ss < robot.sensors.length; ss++) {
-    if (robot.sensors[ss].id == id) {
+    if (robot.sensors[ss].id == sensor_id) {
       return robot.sensors[ss].value;
     }
   }
-  return undefined;  // if not returned yet, id doesn't exist
+  return undefined;  // if not returned yet, sensor_id doesn't exist
 };
+
+function rotateBySetRadians(robot,
+                            set_radians=Math.PI/2,
+                            abs_torque=0.01) {
+  /* Rotate the robot for the given amount in parameter set_radians;
+   * abs_torque is the absolute amount of torque to apply per sim step.
+   * Note that robotMove() is not executed until the rotation is done.
+   *
+   * Note how this is implemented by creating a closure to save the requested
+   * goal angle when rotateBySetRadians() is called in robotMove().
+   * The closure is temporarily inserted in robot.move (called each sim step).
+   */
+
+  abs_torque = Math.abs(abs_torque);  // never trust users :)
+
+  // compute values to define and monitor the rotation progress
+  const robot_angle = getSensorValById(robot, 'gyro'),  // current robot angle
+        goal_angle = robot_angle + set_radians,  // goal angle after rotation
+        error_angle = goal_angle - robot_angle,  // signed error angle
+        sgn_torque = Math.sign(error_angle);  // which direction to rotate
+
+  function rotateUntilDone() {
+    const error_angle = goal_angle - getSensorValById(robot, 'gyro');
+    // anything left to rotate, or did we already overshoot (if < 0)?
+    const error_remaining = error_angle * sgn_torque;
+
+    if (error_remaining > 0) {  // not done yet, rotate a bit further
+      robot.rotate(robot, sgn_torque*abs_torque);
+    }
+    else {  // done with rotation, call robotMove() again in next sim step
+      robot.move = robotMove;
+    }
+  };
+
+  return rotateUntilDone;
+}
 
 function robotMove(robot) {
-  // TODO: Define Lemming program here.
-  const distL = getSensorValById(robot, 'distL'),
-        distR = getSensorValById(robot, 'distR');
+// TODO: Program Lemming behavior.
+/* o By default, the Lemming should wander around in a slight right curve.
+ * o If it senses a block its subsequent behavior depends on whether a block is
+ *   in the gripper and the block color.
+ *   – If it carries no block it should drive straight towards it, and thus get
+ *     the block into the gripper.
+ *   – If it carries a blue block, it keeps wandering and ignores the detected block.
+ *   – If it carries a red block it turns left to leave the block.
+ * o If it senses a wall its behavior should depend on whether a block is in the
+ *   gripper and the block color.
+ *   – If it carries no block it should turn either left or right.
+ *   – If it carries a blue block it should turn left to leave the block.
+ *   – If it carries a red block it should turn right to keep the block.
+ */
 
-  robot.rotate(robot, +0.005);
+  const dist_all = getSensorValById(robot, 'dist_all'),
+        dist_noBox = getSensorValById(robot, 'dist_noBox');
+
   robot.drive(robot, 0.0005);
+
+  // A demonstration of a turn every 200th step (as an example of some condition)
+  if (!(simInfo.curSteps % 200)) {
+    // Attach new closure to robot.move (the function called every sim step),
+    // to prevent entering robotMove() until the requested rotation is done:
+    robot.move = rotateBySetRadians(robot, Math.PI/1.5);
+  }
+
 };
 
-function plotSensor(context, x = this.x, y = this.y) {
+function plotSensor(context, x=this.x, y=this.y) {
+  var color = 'black';
+  if (this.info.color) {
+    color = convrgb(this.info.color);
+  }
   context.beginPath();
   context.arc(x + this.getWidth()/2,
               y + this.getHeight()/2,
               this.getWidth()/2, 0, 2*Math.PI);
   context.closePath();
-  context.fillStyle = 'black';
-  context.strokeStyle = 'black';
+  context.fillStyle = color;
+  context.strokeStyle = color;
   context.fill();
   context.stroke();
 }
@@ -507,13 +633,21 @@ function plotRobot(context,
   // Plot sensor positions into world canvas.
   if (context.canvas.id == "arenaLemming") {
     for (ss = 0; ss < this.info.sensors.length; ++ss) {
+      const attachAngle = this.info.sensors[ss].attachAngle,
+            attachRadius = this.info.sensors[ss].attachRadius;
+      var color = 'black';
+
+      if (this.info.sensors[ss].color) {
+        color = convrgb(this.info.sensors[ss].color);
+      }
+
       context.beginPath();
-      context.arc(full * Math.cos(this.info.sensors[ss].attachAngle),
-                  full * Math.sin(this.info.sensors[ss].attachAngle),
+      context.arc(attachRadius * Math.cos(attachAngle),
+                  attachRadius * Math.sin(attachAngle),
                   scale, 0, 2*Math.PI);
       context.closePath();
-      context.fillStyle = 'black';
-      context.strokeStyle = 'black';
+      context.fillStyle = color;
+      context.strokeStyle = color;
       context.fill();
       context.stroke();
     }
@@ -527,20 +661,20 @@ function simStep() {
     repaintBay();
     drawBoard();
     for (var rr = 0; rr < robots.length; ++rr) {
-      robotUpdateSensors(robots[rr]);
-      robotMove(robots[rr]);
+      var robot = robots[rr];
+      robotUpdateSensors(robot);
+      robot.move(robot);
       // To enable selection by clicking (via mouse.js/graphics.js),
       // the position on the canvas needs to be defined in (x, y):
       const rSize = simInfo.robotSize;
-      robots[rr].x = robots[rr].body.position.x - rSize;
-      robots[rr].y = robots[rr].body.position.y - rSize;
+      robot.x = robot.body.position.x - rSize;
+      robot.y = robot.body.position.y - rSize;
     }
     // count and display number of steps
     simInfo.curSteps += 1;
     document.getElementById("SimStepLabel").innerHTML =
       padnumber(simInfo.curSteps, 5) +
-      ' of ' +
-      padnumber(simInfo.maxSteps, 5);
+      ' of ' + padnumber(simInfo.maxSteps, 5);
   }
   else {
     toggleSimulation();
@@ -598,8 +732,13 @@ function repaintBay() {
     var sensorString = '';
     const rsensors = simInfo.bayRobot.sensors;
     for (ss = 0; ss < rsensors.length; ss++) {
-      sensorString += '<br> id \'' + rsensors[ss].id + '\': ' +
-        padnumber(rsensors[ss].value, 2);
+      var sensor = rsensors[ss],
+          colorStr = 'black';
+      if (sensor.color) {
+        colorStr = convrgb(sensor.color);
+      }
+      sensorString += '<br> <span style="color:' + colorStr + ';">'
+        + 'id \'' + sensor.id + '\': ' + sensor.valueStr;
     }
     document.getElementById('SensorLabel').innerHTML = sensorString;
   }
@@ -646,9 +785,9 @@ function padnumber(number, size) {
   return s.substr(s.length - size);
 }
 
-function format(number) {
+function format(number, numFix=1) {
   // prevent HTML elements to jump around at sign flips etc
-  return (number >= 0 ? '+' : '−') + Math.abs(number).toFixed(1);
+  return (number >= 0 ? '+' : '−') + Math.abs(number).toFixed(numFix);
 }
 
 function toggleSimulation() {
@@ -660,4 +799,3 @@ function toggleSimulation() {
     Matter.Runner.stop(simInfo.runner);
   }
 }
-
