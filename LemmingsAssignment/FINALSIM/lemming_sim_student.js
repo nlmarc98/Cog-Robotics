@@ -750,17 +750,15 @@ function robotMove(robot) {
  */
 
   const frontS_dist_all = getSensorValById(robot, 'frontS_dist_all'),
-        frontS_dist_noBox = getSensorValById(robot, 'frontS_dist_noBox'),
 		color_gripper = getSensorValById(robot, 'color_gripper'),
 		frontS_color_all = getSensorValById(robot, 'frontS_color_all'),
-		frontS_color_noBox = getSensorValById(robot, 'frontS_color_noBox'),
 		defaultRotate = 0.0002;
 
 		
   // Examined variable is robot speed.
-  // Speed 1 (slow):    0.0001
+  // Speed 1 (slow):    0.00010
   // Speed 2 (average): 0.00025
-  // Speed 3 (fast):    0.0004
+  // Speed 3 (fast):    0.00030
   robot.drive(robot, 0.00025);
   robot.rotate(robot, defaultRotate);
   if (frontS_color_all == "r" || frontS_color_all == "b"){
