@@ -25,15 +25,18 @@ RobotInfo = [
   // First Robot
   {body: null, color: "red", init: {x: 50, y: 400, angle: 5.5},
     sensors: [
-	 // define right sensor
+	 // define right distance sensor
      {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: Math.PI/4,
       lookAngle: 0, id: 'distR', parent: null, value: null},
-     // define left sensor
+     // define left distance sensor
      {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: -Math.PI/4,
       lookAngle: 0, id: 'distL', parent: null, value: null},
-     // define middle sensor
+     // define middle distance sensor
      {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: 0, 
-	  lookAngle: 0, id: 'distM', parent: null, value: null}
+	  lookAngle: 0, id: 'distM', parent: null, value: null},
+	 // define middle touch sensor 
+	 {sense: senseTouch, minVal: 0, maxVal: 50, attachAngle: 0, 
+	  lookAngle: 0, id: 'touchM', parent: null, value: null}
     ]
   },
   // Second Robot
@@ -332,6 +335,136 @@ function senseDistance() {
   this.value = rayLength;
 };
 
+function senseTouch() {
+  /* Distance touch simulation based on ray casting. Called from sensor
+   * object, returns nothing, updates a new reading into this.value.
+   *
+   * Idea: Cast a ray with a certain length from the sensor, and check
+   *       via collision detection if objects intersect with the ray.
+   *       To determine distance, run a Binary search on ray length.
+   * Note: Sensor ray needs to ignore robot (parts), or start outside of it.
+   *       The latter is easy with the current circular shape of the robots.
+   * Note: Order of tests are optimized by starting with max ray length, and
+   *       then only testing the maximal number of initially resulting objects.
+   * Note: The sensor's "ray" could have any other (convex) shape;
+   *       currently it's just a very thin rectangle.
+   */
+
+  const context = document.getElementById('arenaHebbbot').getContext('2d');
+  var bodies = Matter.Composite.allBodies(simInfo.engine.world);
+
+  const robotAngle = this.parent.body.angle,
+        attachAngle = this.attachAngle,
+        rayAngle = robotAngle + attachAngle + this.lookAngle;
+
+  const rPos = this.parent.body.position,
+        rSize = simInfo.robotSize,
+        startPoint = {x: rPos.x + (rSize+1) * Math.cos(robotAngle + attachAngle),
+                      y: rPos.y + (rSize+1) * Math.sin(robotAngle + attachAngle)};
+
+  function getEndpoint(rayLength) {
+    return {x: startPoint.x + rayLength * Math.cos(rayAngle),
+            y: startPoint.y + rayLength * Math.sin(rayAngle)};
+  };
+
+  function sensorRay(bodies, rayLength) {
+    // Cast ray of supplied length and return the bodies that collide with it.
+    const rayWidth = 1e-100,
+          endPoint = getEndpoint(rayLength);
+    rayX = (endPoint.x + startPoint.x) / 2,
+    rayY = (endPoint.y + startPoint.y) / 2,
+    rayRect = Matter.Bodies.rectangle(rayX, rayY, rayLength, rayWidth,
+                                      {isSensor: true, isStatic: true,
+                                       angle: rayAngle, role: 'sensor'});
+
+    var collidedBodies = [];
+    for (var bb = 0; bb < bodies.length; bb++) {
+      var body = bodies[bb];
+      // coarse check on body boundaries, to increase performance:
+      if (Matter.Bounds.overlaps(body.bounds, rayRect.bounds)) {
+        for (var pp = body.parts.length === 1 ? 0 : 1; pp < body.parts.length; pp++) {
+          var part = body.parts[pp];
+          // finer, more costly check on actual geometry:
+          if (Matter.Bounds.overlaps(part.bounds, rayRect.bounds)) {
+            const collision = Matter.SAT.collides(part, rayRect);
+            if (collision.collided) {
+              collidedBodies.push(body);
+              break;
+            }
+          }
+        }
+      }
+    }
+    return collidedBodies;
+  };
+
+  // call 1x with full length, and check all bodies in the world;
+  // in subsequent calls, only check the bodies resulting here
+  var rayLength = this.maxVal;
+  bodies = sensorRay(bodies, rayLength);
+
+  // if some collided, search for maximal ray length without collisions
+  if (bodies.length > 0) {
+    var lo = 0,
+        hi = rayLength;
+    while (lo < rayLength) {
+      if (sensorRay(bodies, rayLength).length > 0) {
+        hi = rayLength;
+      }
+      else {
+        lo = rayLength;
+      }
+      rayLength = Math.floor(lo + (hi-lo)/2);
+    }
+  }
+  // increase length to (barely) touch closest body (if any)
+  rayLength += 1;
+  bodies = sensorRay(bodies, rayLength);
+
+  if (simInfo.debugSensors) {  // if invisible, check order of object drawing
+    // draw the resulting ray
+    endPoint = getEndpoint(rayLength);
+    context.beginPath();
+    context.moveTo(startPoint.x, startPoint.y);
+    context.lineTo(endPoint.x, endPoint.y);
+    context.strokeStyle = this.parent.info.color;
+    context.lineWidth = 0.5;
+    context.stroke();
+    // mark all objects's lines intersecting with the ray
+    for (var bb = 0; bb < bodies.length; bb++) {
+      var vertices = bodies[bb].vertices;
+      context.moveTo(vertices[0].x, vertices[0].y);
+      for (var vv = 1; vv < vertices.length; vv += 1) {
+        context.lineTo(vertices[vv].x, vertices[vv].y);
+      }
+      context.closePath();
+    }
+    context.stroke();
+  }
+
+  // indicate if the sensor exceeded its maximum length by returning infinity
+  if (rayLength > this.maxVal) {
+    rayLength = Infinity;
+  }
+  else {
+    // apply mild noise on the sensor reading, and clamp between valid values
+    function gaussNoise(sigma=1) {
+      const x0 = 1.0 - Math.random();
+      const x1 = 1.0 - Math.random();
+      return sigma * Math.sqrt(-2 * Math.log(x0)) * Math.cos(2 * Math.PI * x1);
+    };
+    // rayLength = Math.floor(rayLength + gaussNoise(3));
+    rayLength = Matter.Common.clamp(rayLength, this.minVal, this.maxVal);
+  }
+  if (rayLength >= 0 && rayLength <= 3) {
+	  this.value = 1;
+  }
+  else {
+	  this.value = 0;
+  }
+};
+
+
 
 function dragSensor(sensor, event) {
   const robotBay = document.getElementById('bayHebbbot'),
@@ -455,10 +588,10 @@ function robotMove(robot) {
 		// Randomly chooses to turn left or right.
 		var random = getRandomInt(0,10);
 		if (random % 2 == 1) {
-			rotate(robot,0.20);
+			// rotate(robot,0.20);
 		}
 		else {
-			rotate(robot,-0.20);
+			// rotate(robot,-0.20);
 		}
 	}
 };
