@@ -34,63 +34,90 @@ RobotInfo = [
      // define middle distance sensor
      {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: 0, 
 	  lookAngle: 0, id: 'distM', parent: null, value: null},
-	 // define middle touch sensor 
-	 {sense: senseTouch, minVal: 0, maxVal: 50, attachAngle: 0, 
-	  lookAngle: 0, id: 'touchM', parent: null, value: null}
+	 // define left touch sensor 
+	 {sense: senseTouch, minVal: 0, maxVal: 50, attachAngle: -Math.PI/4,
+      lookAngle: 0, id: 'touchL', parent: null, value: null},
+	 // define right touch sensor
+	 {sense: senseTouch, minVal: 0, maxVal: 50, attachAngle: Math.PI/4,
+      lookAngle: 0, id: 'touchR', parent: null, value: null}
     ]
   },
   // Second Robot
   {body: null, color: "blue", init: {x: 400, y: 50, angle: 2},
-   sensors: [
-	 // define right sensor
+    sensors: [
+	 // define right distance sensor
      {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: Math.PI/4,
       lookAngle: 0, id: 'distR', parent: null, value: null},
-     // define left sensor
+     // define left distance sensor
      {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: -Math.PI/4,
       lookAngle: 0, id: 'distL', parent: null, value: null},
-     // define middle sensor
+     // define middle distance sensor
      {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: 0, 
-	  lookAngle: 0, id: 'distM', parent: null, value: null}
+	  lookAngle: 0, id: 'distM', parent: null, value: null},
+	 // define left touch sensor 
+	 {sense: senseTouch, minVal: 0, maxVal: 50, attachAngle: -Math.PI/4,
+      lookAngle: 0, id: 'touchL', parent: null, value: null},
+	 // define right touch sensor
+	 {sense: senseTouch, minVal: 0, maxVal: 50, attachAngle: Math.PI/4,
+      lookAngle: 0, id: 'touchR', parent: null, value: null}
     ]
   },
   // Third Robot
   {body: null, color: "orange", init: {x: 50, y: 50, angle: 1},
     sensors: [
-	 // define right sensor
+	 // define right distance sensor
      {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: Math.PI/4,
       lookAngle: 0, id: 'distR', parent: null, value: null},
-     // define left sensor
+     // define left distance sensor
      {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: -Math.PI/4,
       lookAngle: 0, id: 'distL', parent: null, value: null},
-     // define middle sensor
+     // define middle distance sensor
      {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: 0, 
-	  lookAngle: 0, id: 'distM', parent: null, value: null}
+	  lookAngle: 0, id: 'distM', parent: null, value: null},
+	 // define left touch sensor 
+	 {sense: senseTouch, minVal: 0, maxVal: 50, attachAngle: -Math.PI/4,
+      lookAngle: 0, id: 'touchL', parent: null, value: null},
+	 // define right touch sensor
+	 {sense: senseTouch, minVal: 0, maxVal: 50, attachAngle: Math.PI/4,
+      lookAngle: 0, id: 'touchR', parent: null, value: null}
     ]
   },
   {body: null,color: "green", init: {x: 400, y: 400, angle: 2*Math.PI/2},
-   sensors: [
-	 // define right sensor
+    sensors: [
+	 // define right distance sensor
      {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: Math.PI/4,
       lookAngle: 0, id: 'distR', parent: null, value: null},
-     // define left sensor
+     // define left distance sensor
      {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: -Math.PI/4,
       lookAngle: 0, id: 'distL', parent: null, value: null},
-     // define middle sensor
+     // define middle distance sensor
      {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: 0, 
-	  lookAngle: 0, id: 'distM', parent: null, value: null}
+	  lookAngle: 0, id: 'distM', parent: null, value: null},
+	 // define left touch sensor 
+	 {sense: senseTouch, minVal: 0, maxVal: 50, attachAngle: -Math.PI/4,
+      lookAngle: 0, id: 'touchL', parent: null, value: null},
+	 // define right touch sensor
+	 {sense: senseTouch, minVal: 0, maxVal: 50, attachAngle: Math.PI/4,
+      lookAngle: 0, id: 'touchR', parent: null, value: null}
     ]
   },
   {body: null, color: "black", init: {x: 225, y: 50, angle: 2},
-   sensors: [
-	 // define right sensor
+    sensors: [
+	 // define right distance sensor
      {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: Math.PI/4,
       lookAngle: 0, id: 'distR', parent: null, value: null},
-     // define left sensor
+     // define left distance sensor
      {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: -Math.PI/4,
       lookAngle: 0, id: 'distL', parent: null, value: null},
-     // define middle sensor
+     // define middle distance sensor
      {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: 0, 
-	  lookAngle: 0, id: 'distM', parent: null, value: null}
+	  lookAngle: 0, id: 'distM', parent: null, value: null},
+	 // define left touch sensor 
+	 {sense: senseTouch, minVal: 0, maxVal: 50, attachAngle: -Math.PI/4,
+      lookAngle: 0, id: 'touchL', parent: null, value: null},
+	 // define right touch sensor
+	 {sense: senseTouch, minVal: 0, maxVal: 50, attachAngle: Math.PI/4,
+      lookAngle: 0, id: 'touchR', parent: null, value: null}
     ]
   }
 ];
