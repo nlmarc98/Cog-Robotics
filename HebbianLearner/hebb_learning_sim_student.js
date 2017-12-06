@@ -1,4 +1,7 @@
-/* Didabots - robot and GUI script.
+/* Hebbian Learner - robot and GUI script.
+ *
+ *
+ * Based on the Didabots - robot and GUI script.
  *
  * Copyright 2016 Harmen de Weerd
  * Copyright 2017 Johannes Keyser, James Cooke
@@ -19,184 +22,78 @@
 
 // Description of robot(s), and attached sensor(s) used by InstantiateRobot()
 RobotInfo = [
-  {body: null,  // for MatterJS body, added by InstantiateRobot()
-   color: "red",  // color of the robot marker
-   init: {x: 50, y: 400, angle: 5.5},  // initial position and orientation
-   sensors: [  // define an array of sensors on the robot
-     // define right sensor
-     {sense: senseDistance,  // function handle, determines type of sensor
-      minVal: 0,  // minimum detectable distance, in pixels
-      maxVal: 50,  // maximum detectable distance, in pixels
-      attachAngle: Math.PI/4,  // where the sensor is mounted on robot body
-      lookAngle: 0,  // direction the sensor is looking (relative to center-out)
-      id: 'distR',  // a unique, arbitrary ID of the sensor, for printing/debugging
-      parent: null,  // robot object the sensor is attached to, added by InstantiateRobot
-      value: null  // sensor value, i.e. distance in pixels; updated by sense() function
-     },
+  // First Robot
+  {body: null, color: "red", init: {x: 50, y: 400, angle: 5.5},
+    sensors: [
+	 // define right sensor
+     {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: Math.PI/4,
+      lookAngle: 0, id: 'distR', parent: null, value: null},
      // define left sensor
-     {sense: senseDistance,
-      minVal: 0,
-      maxVal: 50,
-      attachAngle: -Math.PI/4,
-      lookAngle: 0,
-      id: 'distL',
-      parent: null,
-      value: null}
-	  ,
+     {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: -Math.PI/4,
+      lookAngle: 0, id: 'distL', parent: null, value: null},
      // define middle sensor
-     {sense: senseDistance,
-      minVal: 0,
-      maxVal: 50,
-      attachAngle: 0,
-      lookAngle: 0,
-      id: 'distM',
-      parent: null,
-      value: null}
-   ]
+     {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: 0, 
+	  lookAngle: 0, id: 'distM', parent: null, value: null}
+    ]
   },
-  {body: null,  // for MatterJS body, added by InstantiateRobot()
-   color: "blue",  // color of the robot marker
-   init: {x: 400, y: 50, angle: 2},  // initial position and orientation
-   sensors: [  // define an array of sensors on the robot
-     // define right sensor
-     {sense: senseDistance,  // function handle, determines type of sensor
-      minVal: 0,  // minimum detectable distance, in pixels
-      maxVal: 50,  // maximum detectable distance, in pixels
-      attachAngle: Math.PI/4,  // where the sensor is mounted on robot body
-      lookAngle: 0,  // direction the sensor is looking (relative to center-out)
-      id: 'distR',  // a unique, arbitrary ID of the sensor, for printing/debugging
-      parent: null,  // robot object the sensor is attached to, added by InstantiateRobot
-      value: null  // sensor value, i.e. distance in pixels; updated by sense() function
-     },
+  // Second Robot
+  {body: null, color: "blue", init: {x: 400, y: 50, angle: 2},
+   sensors: [
+	 // define right sensor
+     {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: Math.PI/4,
+      lookAngle: 0, id: 'distR', parent: null, value: null},
      // define left sensor
-     {sense: senseDistance,
-      minVal: 0,
-      maxVal: 50,
-      attachAngle: -Math.PI/4,
-      lookAngle: 0,
-      id: 'distL',
-      parent: null,
-      value: null}
-	  ,
+     {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: -Math.PI/4,
+      lookAngle: 0, id: 'distL', parent: null, value: null},
      // define middle sensor
-     {sense: senseDistance,
-      minVal: 0,
-      maxVal: 50,
-      attachAngle: 0,
-      lookAngle: 0,
-      id: 'distM',
-      parent: null,
-      value: null}
-   ]
+     {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: 0, 
+	  lookAngle: 0, id: 'distM', parent: null, value: null}
+    ]
   },
-  {body: null,  // for MatterJS body, added by InstantiateRobot()
-   color: "orange",  // color of the robot marker
-   init: {x: 50, y: 50, angle: 1},  // initial position and orientation
-   sensors: [  // define an array of sensors on the robot
-     // define right sensor
-     {sense: senseDistance,  // function handle, determines type of sensor
-      minVal: 0,  // minimum detectable distance, in pixels
-      maxVal: 50,  // maximum detectable distance, in pixels
-      attachAngle: Math.PI/4,  // where the sensor is mounted on robot body
-      lookAngle: 0,  // direction the sensor is looking (relative to center-out)
-      id: 'distR',  // a unique, arbitrary ID of the sensor, for printing/debugging
-      parent: null,  // robot object the sensor is attached to, added by InstantiateRobot
-      value: null  // sensor value, i.e. distance in pixels; updated by sense() function
-     },
+  // Third Robot
+  {body: null, color: "orange", init: {x: 50, y: 50, angle: 1},
+    sensors: [
+	 // define right sensor
+     {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: Math.PI/4,
+      lookAngle: 0, id: 'distR', parent: null, value: null},
      // define left sensor
-     {sense: senseDistance,
-      minVal: 0,
-      maxVal: 50,
-      attachAngle: -Math.PI/4,
-      lookAngle: 0,
-      id: 'distL',
-      parent: null,
-      value: null}
-	  ,
+     {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: -Math.PI/4,
+      lookAngle: 0, id: 'distL', parent: null, value: null},
      // define middle sensor
-     {sense: senseDistance,
-      minVal: 0,
-      maxVal: 50,
-      attachAngle: 0,
-      lookAngle: 0,
-      id: 'distM',
-      parent: null,
-      value: null}
-   ]
+     {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: 0, 
+	  lookAngle: 0, id: 'distM', parent: null, value: null}
+    ]
   },
-  {body: null,  // for MatterJS body, added by InstantiateRobot()
-   color: "green",  // color of the robot marker
-   init: {x: 400, y: 400, angle: 0},  // initial position and orientation
-   sensors: [  // define an array of sensors on the robot
-     // define right sensor
-     {sense: senseDistance,  // function handle, determines type of sensor
-      minVal: 0,  // minimum detectable distance, in pixels
-      maxVal: 50,  // maximum detectable distance, in pixels
-      attachAngle: Math.PI/4,  // where the sensor is mounted on robot body
-      lookAngle: 0,  // direction the sensor is looking (relative to center-out)
-      id: 'distR',  // a unique, arbitrary ID of the sensor, for printing/debugging
-      parent: null,  // robot object the sensor is attached to, added by InstantiateRobot
-      value: null  // sensor value, i.e. distance in pixels; updated by sense() function
-     },
+  {body: null,color: "green", init: {x: 400, y: 400, angle: 2*Math.PI/2},
+   sensors: [
+	 // define right sensor
+     {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: Math.PI/4,
+      lookAngle: 0, id: 'distR', parent: null, value: null},
      // define left sensor
-     {sense: senseDistance,
-      minVal: 0,
-      maxVal: 50,
-      attachAngle: -Math.PI/4,
-      lookAngle: 0,
-      id: 'distL',
-      parent: null,
-      value: null}
-	  ,
+     {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: -Math.PI/4,
+      lookAngle: 0, id: 'distL', parent: null, value: null},
      // define middle sensor
-     {sense: senseDistance,
-      minVal: 0,
-      maxVal: 50,
-      attachAngle: 0,
-      lookAngle: 0,
-      id: 'distM',
-      parent: null,
-      value: null}
-   ]
+     {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: 0, 
+	  lookAngle: 0, id: 'distM', parent: null, value: null}
+    ]
   },
-  {body: null,  // for MatterJS body, added by InstantiateRobot()
-   color: "black",  // color of the robot marker
-   init: {x: 225, y: 50, angle: 2},  // initial position and orientation
-   sensors: [  // define an array of sensors on the robot
-     // define right sensor
-     {sense: senseDistance,  // function handle, determines type of sensor
-      minVal: 0,  // minimum detectable distance, in pixels
-      maxVal: 50,  // maximum detectable distance, in pixels
-      attachAngle: Math.PI/4,  // where the sensor is mounted on robot body
-      lookAngle: 0,  // direction the sensor is looking (relative to center-out)
-      id: 'distR',  // a unique, arbitrary ID of the sensor, for printing/debugging
-      parent: null,  // robot object the sensor is attached to, added by InstantiateRobot
-      value: null  // sensor value, i.e. distance in pixels; updated by sense() function
-     },
+  {body: null, color: "black", init: {x: 225, y: 50, angle: 2},
+   sensors: [
+	 // define right sensor
+     {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: Math.PI/4,
+      lookAngle: 0, id: 'distR', parent: null, value: null},
      // define left sensor
-     {sense: senseDistance,
-      minVal: 0,
-      maxVal: 50,
-      attachAngle: -Math.PI/4,
-      lookAngle: 0,
-      id: 'distL',
-      parent: null,
-      value: null}
-	  ,
+     {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: -Math.PI/4,
+      lookAngle: 0, id: 'distL', parent: null, value: null},
      // define middle sensor
-     {sense: senseDistance,
-      minVal: 0,
-      maxVal: 50,
-      attachAngle: 0,
-      lookAngle: 0,
-      id: 'distM',
-      parent: null,
-      value: null}
-   ]
+     {sense: senseDistance, minVal: 0, maxVal: 50, attachAngle: 0, 
+	  lookAngle: 0, id: 'distM', parent: null, value: null}
+    ]
   }
 ];
 
 simInfo = {
+  numRobots: 1, // number of robots in simulation
   maxSteps: 20000,  // maximal number of simulation steps to run
   airDrag: 0.1,  // "air" friction of enviroment; 0 is vacuum, 0.9 is molasses
   boxFric: 0.045, // 
@@ -223,8 +120,8 @@ robots = new Array();
 sensors = new Array();
 
 function init() {  // called once when loading HTML file
-  const robotBay = document.getElementById("bayDidabot"),
-        arena = document.getElementById("arenaDidabot"),
+  const robotBay = document.getElementById("bayHebbbot"),
+        arena = document.getElementById("arenaHebbbot"),
         height = arena.height,
         width = arena.width;
   simInfo.height = height;
@@ -284,12 +181,8 @@ function init() {  // called once when loading HTML file
   Matter.Events.on(simInfo.engine, 'tick', simStep);
 
   /* Create robot(s). */
-  setRobotNumber(1);  // requires defined simInfo.world
-  loadBay(robots[0]);
-  //loadBay(robots[1]);
-  //loadBay(robots[2]);
-  //loadBay(robots[3]);
-  //loadBay(robots[4]);
+  setRobotNumber(simInfo.numRobots);  // requires defined simInfo.world
+  loadBay(robots[simInfo.numRobots - 1]);
 };
 
 function rotate(robot, torque=0) {
@@ -329,7 +222,7 @@ function senseDistance() {
    *       currently it's just a very thin rectangle.
    */
 
-  const context = document.getElementById('arenaDidabot').getContext('2d');
+  const context = document.getElementById('arenaHebbbot').getContext('2d');
   var bodies = Matter.Composite.allBodies(simInfo.engine.world);
 
   const robotAngle = this.parent.body.angle,
@@ -342,8 +235,8 @@ function senseDistance() {
                       y: rPos.y + (rSize+1) * Math.sin(robotAngle + attachAngle)};
 
   function getEndpoint(rayLength) {
-    return {x: rPos.x + (rSize + rayLength) * Math.cos(rayAngle),
-            y: rPos.y + (rSize + rayLength) * Math.sin(rayAngle)};
+    return {x: startPoint.x + rayLength * Math.cos(rayAngle),
+            y: startPoint.y + rayLength * Math.sin(rayAngle)};
   };
 
   function sensorRay(bodies, rayLength) {
@@ -441,7 +334,7 @@ function senseDistance() {
 
 
 function dragSensor(sensor, event) {
-  const robotBay = document.getElementById('bayDidabot'),
+  const robotBay = document.getElementById('bayHebbbot'),
         bCenter = {x: robotBay.width/2,
                    y: robotBay.height/2},
         rSize = simInfo.robotSize,
@@ -466,7 +359,7 @@ function loadSensorInfo(sensorInfo) {
 function loadBay(robot) {
   simInfo.bayRobot = robot;
   sensors = new Array();
-  const robotBay = document.getElementById("bayDidabot");
+  const robotBay = document.getElementById("bayHebbbot");
   const bCenter = {x: robotBay.width/2,
                    y: robotBay.height/2},
         rSize = simInfo.robotSize,
@@ -477,7 +370,7 @@ function loadBay(robot) {
           attachAngle = curSensor.attachAngle;
     // put current sensor into global variable, make mouse-interactive
     sensors[ss] = makeInteractiveElement(new SensorGraphics(curSensor),
-                                         document.getElementById("bayDidabot"));
+                                         document.getElementById("bayHebbbot"));
     const sSize = sensors[ss].getWidth();
     sensors[ss].x = bCenter.x - sSize - bScale * rSize * Math.sin(-attachAngle);
     sensors[ss].y = bCenter.y - sSize - bScale * rSize * Math.cos( attachAngle);
@@ -588,7 +481,7 @@ function plotRobot(context,
   var x, y, scale, angle, i, half, full,
       rSize = simInfo.robotSize;
 
-  if (context.canvas.id == "bayDidabot") {
+  if (context.canvas.id == "bayHebbbot") {
     scale = simInfo.bayScale;
     half = Math.floor(rSize/2*scale);
     full = half * 2;
@@ -609,7 +502,7 @@ function plotRobot(context,
 
   // Plot wheels as rectangles.
   context.strokeStyle = "black";
-  if (context.canvas.id == "bayDidabot") {
+  if (context.canvas.id == "bayHebbbot") {
     context.fillStyle = "grey";
     context.fillRect(-half, -full, full, full);
     context.fillRect(-half, 0, full, full);
@@ -620,7 +513,7 @@ function plotRobot(context,
   context.strokeRect(-half, -full, full, 2*full);
 
   // Plot circular base object.
-  if (context.canvas.id == "bayDidabot") {
+  if (context.canvas.id == "bayHebbbot") {
     context.beginPath();
     context.arc(0, 0, full, 0, 2*Math.PI);
     context.closePath();
@@ -628,7 +521,7 @@ function plotRobot(context,
     context.fill();
     context.stroke();
   }
-  else { // context.canvas.id == "arenaDidabot"
+  else { // context.canvas.id == "arenaHebbbot"
     // draw into world canvas without transformations,
     // because MatterJS thinks in world coords...
     context.restore();
@@ -660,7 +553,7 @@ function plotRobot(context,
   context.stroke();
 
   // Plot sensor positions into world canvas.
-  if (context.canvas.id == "arenaDidabot") {
+  if (context.canvas.id == "arenaHebbbot") {
     for (ss = 0; ss < this.info.sensors.length; ++ss) {
       context.beginPath();
       context.arc(full * Math.cos(this.info.sensors[ss].attachAngle),
@@ -703,7 +596,7 @@ function simStep() {
 }
 
 function drawBoard() {
-  var context = document.getElementById('arenaDidabot').getContext('2d');
+  var context = document.getElementById('arenaHebbbot').getContext('2d');
   context.fillStyle = "#444444";
   context.fillRect(0, 0, simInfo.width, simInfo.height);
 
@@ -739,7 +632,7 @@ function drawBoard() {
 
 function repaintBay() {
   // update inset canvas showing information about selected robot
-  const robotBay = document.getElementById('bayDidabot'),
+  const robotBay = document.getElementById('bayHebbbot'),
         context = robotBay.getContext('2d');
   context.clearRect(0, 0, robotBay.width, robotBay.height);
   simInfo.bayRobot.plotRobot(context, 10, 10);
@@ -777,7 +670,7 @@ function setRobotNumber(newValue) {
     }
     n = robots.length;
     robots[n] = makeInteractiveElement(new InstantiateRobot(RobotInfo[n]),
-                                       document.getElementById("arenaDidabot"));
+                                       document.getElementById("arenaHebbbot"));
 
     robots[n].onDrop = function(robot, event) {
       robot.isDragged = false;
