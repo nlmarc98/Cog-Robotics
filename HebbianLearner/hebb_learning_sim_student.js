@@ -154,8 +154,8 @@ function init() {  // called once when loading HTML file
                                     role: 'box'});
   };
   const startX = 100, startY = 100,
-        nBoxX = 5, nBoxY = 5,
-        gapX = 40, gapY = 30,
+        nBoxX = 4, nBoxY = 4,
+        gapX = 50, gapY = 50,
         stack = Matter.Composites.stack(startX, startY,
                                         nBoxX, nBoxY,
                                         gapX, gapY, getBox);
