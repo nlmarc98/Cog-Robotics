@@ -547,12 +547,12 @@ function getRandomInt(min, max) {
 
 function robotMove(robot) {
 // This function is called each timestep and should be used to move the robots
-	drive(robot,0.0003);
+	drive(robot,0.0001);
 	distL = getSensorValById(robot,'distL');
 	distR = getSensorValById(robot,'distR');
 	distM = getSensorValById(robot,'distM');
 	if(distL < distR){
-		rotate(robot,0.01);
+		rotate(robot,-0.01);
 	}
 	else {
 	}
