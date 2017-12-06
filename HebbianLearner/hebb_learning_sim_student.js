@@ -39,7 +39,10 @@ RobotInfo = [
       lookAngle: 0, id: 'touchL', parent: null, value: null},
 	 // define right touch sensor
 	 {sense: senseTouch, minVal: 0, maxVal: 50, attachAngle: Math.PI/4,
-      lookAngle: 0, id: 'touchR', parent: null, value: null}
+      lookAngle: 0, id: 'touchR', parent: null, value: null},
+	 // define middle touch sensor
+	 {sense: senseTouch, minVal: 0, maxVal: 50, attachAngle: 0, 
+	  lookAngle: 0, id: 'touchM', parent: null, value: null},
     ]
   },
   // Second Robot
@@ -59,7 +62,10 @@ RobotInfo = [
       lookAngle: 0, id: 'touchL', parent: null, value: null},
 	 // define right touch sensor
 	 {sense: senseTouch, minVal: 0, maxVal: 50, attachAngle: Math.PI/4,
-      lookAngle: 0, id: 'touchR', parent: null, value: null}
+      lookAngle: 0, id: 'touchR', parent: null, value: null},
+	 // define middle touch sensor
+	 {sense: senseTouch, minVal: 0, maxVal: 50, attachAngle: 0, 
+	  lookAngle: 0, id: 'touchM', parent: null, value: null},
     ]
   },
   // Third Robot
@@ -79,7 +85,10 @@ RobotInfo = [
       lookAngle: 0, id: 'touchL', parent: null, value: null},
 	 // define right touch sensor
 	 {sense: senseTouch, minVal: 0, maxVal: 50, attachAngle: Math.PI/4,
-      lookAngle: 0, id: 'touchR', parent: null, value: null}
+      lookAngle: 0, id: 'touchR', parent: null, value: null},
+	 // define middle touch sensor
+	 {sense: senseTouch, minVal: 0, maxVal: 50, attachAngle: 0, 
+	  lookAngle: 0, id: 'touchM', parent: null, value: null},
     ]
   },
   {body: null,color: "green", init: {x: 400, y: 400, angle: 2*Math.PI/2},
@@ -98,7 +107,10 @@ RobotInfo = [
       lookAngle: 0, id: 'touchL', parent: null, value: null},
 	 // define right touch sensor
 	 {sense: senseTouch, minVal: 0, maxVal: 50, attachAngle: Math.PI/4,
-      lookAngle: 0, id: 'touchR', parent: null, value: null}
+      lookAngle: 0, id: 'touchR', parent: null, value: null},
+	 // define middle touch sensor
+	 {sense: senseTouch, minVal: 0, maxVal: 50, attachAngle: 0, 
+	  lookAngle: 0, id: 'touchM', parent: null, value: null},
     ]
   },
   {body: null, color: "black", init: {x: 225, y: 50, angle: 2},
@@ -117,13 +129,16 @@ RobotInfo = [
       lookAngle: 0, id: 'touchL', parent: null, value: null},
 	 // define right touch sensor
 	 {sense: senseTouch, minVal: 0, maxVal: 50, attachAngle: Math.PI/4,
-      lookAngle: 0, id: 'touchR', parent: null, value: null}
+      lookAngle: 0, id: 'touchR', parent: null, value: null},
+	 // define middle touch sensor
+	 {sense: senseTouch, minVal: 0, maxVal: 50, attachAngle: 0, 
+	  lookAngle: 0, id: 'touchM', parent: null, value: null},
     ]
   }
 ];
 
 simInfo = {
-  numRobots: 1, // number of robots in simulation
+  numRobots: 5, // number of robots in simulation
   maxSteps: 20000,  // maximal number of simulation steps to run
   airDrag: 0.1,  // "air" friction of enviroment; 0 is vacuum, 0.9 is molasses
   boxFric: 0.045, // 
