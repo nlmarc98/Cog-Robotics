@@ -43,7 +43,11 @@ RobotInfo = [
 	 // define middle touch sensor
 	 {sense: senseTouch, minVal: 0, maxVal: 50, attachAngle: 0, 
 	  lookAngle: 0, id: 'touchM', parent: null, value: null},
-    ]
+    ],
+	// Starting weights. 
+	weights: [0.5, 0.01, 0.01,
+			  0.01, 0.5, 0.01,
+			  0.01, 0.01, 0.5]
   },
   // Second Robot
   {body: null, color: "blue", init: {x: 400, y: 50, angle: 2},
@@ -66,7 +70,11 @@ RobotInfo = [
 	 // define middle touch sensor
 	 {sense: senseTouch, minVal: 0, maxVal: 50, attachAngle: 0, 
 	  lookAngle: 0, id: 'touchM', parent: null, value: null},
-    ]
+    ],
+	// Starting weights. 
+	weights: [0.5, 0.01, 0.01,
+			  0.01, 0.5, 0.01,
+			  0.01, 0.01, 0.5]
   },
   // Third Robot
   {body: null, color: "orange", init: {x: 50, y: 50, angle: 1},
@@ -89,8 +97,13 @@ RobotInfo = [
 	 // define middle touch sensor
 	 {sense: senseTouch, minVal: 0, maxVal: 50, attachAngle: 0, 
 	  lookAngle: 0, id: 'touchM', parent: null, value: null},
-    ]
+    ],
+	// Starting weights. 
+	weights: [0.5, 0.01, 0.01,
+			  0.01, 0.5, 0.01,
+			  0.01, 0.01, 0.5]
   },
+  // Fourth Robot
   {body: null,color: "green", init: {x: 400, y: 400, angle: 2*Math.PI/2},
     sensors: [
 	 // define right distance sensor
@@ -111,8 +124,13 @@ RobotInfo = [
 	 // define middle touch sensor
 	 {sense: senseTouch, minVal: 0, maxVal: 50, attachAngle: 0, 
 	  lookAngle: 0, id: 'touchM', parent: null, value: null},
-    ]
+    ],
+	// Starting weights. 
+	weights: [0.5, 0.01, 0.01,
+			  0.01, 0.5, 0.01,
+			  0.01, 0.01, 0.5]
   },
+  // Five Robots
   {body: null, color: "black", init: {x: 225, y: 50, angle: 2},
     sensors: [
 	 // define right distance sensor
@@ -133,7 +151,11 @@ RobotInfo = [
 	 // define middle touch sensor
 	 {sense: senseTouch, minVal: 0, maxVal: 50, attachAngle: 0, 
 	  lookAngle: 0, id: 'touchM', parent: null, value: null},
-    ]
+    ],
+	// Starting weights. 
+	weights: [0.5, 0.01, 0.01,
+			  0.01, 0.5, 0.01,
+			  0.01, 0.01, 0.5]
   }
 ];
 
@@ -163,6 +185,7 @@ simInfo = {
 
 robots = new Array();
 sensors = new Array();
+weights = new Array();
 
 function init() {  // called once when loading HTML file
   const robotBay = document.getElementById("bayHebbbot"),
@@ -534,6 +557,7 @@ function loadSensorInfo(sensorInfo) {
 function loadBay(robot) {
   simInfo.bayRobot = robot;
   sensors = new Array();
+  weights = new Array();
   const robotBay = document.getElementById("bayHebbbot");
   const bCenter = {x: robotBay.width/2,
                    y: robotBay.height/2},
@@ -577,6 +601,7 @@ function InstantiateRobot(robotInfo) {
 
   // instantiate its sensors
   this.sensors = robotInfo.sensors;
+  this.weights = robotInfo.weights;
   for (var ss = 0; ss < this.sensors.length; ++ss) {
     this.sensors[ss].parent = this;
   }
@@ -609,25 +634,82 @@ function getSensorValById(robot, id) {
   return undefined;  // if not returned yet, id doesn't exist
 };
 
+function getWeightVal(robot){
+	
+}
+
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function reverseNumber( num,  min,  max) {
+    return (max + min) - num;
 }
 
 function dac(t, w1, w2, w3, p1, p2, p3){
 	if(p1 == "Infinity"){ p1 = 50; }
 	if(p2 == "Infinity"){ p2 = 50; }
 	if(p3 == "Infinity"){ p3 = 50; }
+	p1 = reverseNumber(p1,0,50);
+	p2 = reverseNumber(p2,0,50);
+	p3 = reverseNumber(p3,0,50);
 	return t + w1 * p1/50 + w2 * p2/50 + w3 * p3/50;
 }
+
+function activation(colLayer, threshold) {
+	return (colLayer >= threshold) ? 1 : 0;
+}
+
 function robotMove(robot) {
 // This function is called each timestep and should be used to move the robots
-	//drive(robot,0.0001);
-	var distL = getSensorValById(robot,'distL');
-	var distR = getSensorValById(robot,'distR');
-	var distM = getSensorValById(robot,'distM');
+	drive(robot,0.0001);
+	var distL =  getSensorValById(robot,'distL');
+	var distR =  getSensorValById(robot,'distR');
+	var distM =  getSensorValById(robot,'distM');
 	var touchL = getSensorValById(robot,'touchL');
 	var touchM = getSensorValById(robot,'touchM');
 	var touchR = getSensorValById(robot,'touchR');	
+	
+	var colLayerL  = dac(touchL, robot.weights[0], robot.weights[1], robot.weights[2], distL, distM, distR);
+	var colLayerM  = dac(touchM, robot.weights[3], robot.weights[4], robot.weights[5], distL, distM, distR);
+	var colLayerR  = dac(touchR, robot.weights[6], robot.weights[7], robot.weights[8], distL, distM, distR);	
+	
+	var threshold = 0.4;
+	
+	// Learningrates could be {0, 0.001, 0.01}.
+	var learningrate   = 0.01;
+	var forgettingrate = 0.01;
+	
+	var activationL = activation(colLayerL, threshold);
+	var activationM = activation(colLayerM, threshold);
+	var activationR = activation(colLayerR, threshold);
+	
+	var revdistL = reverseNumber(distL) / 50;
+	var revdistM = reverseNumber(distM) / 50;
+	var revdistR = reverseNumber(distR) / 50;
+	
+	robot.weights[0] = 0.33 * (learningrate * activationL * revdistL - 
+						forgettingrate * 0.5 * robot.weights[0]);
+	robot.weights[1] = 0.33 * (learningrate * activationL * revdistL - 
+								forgettingrate * 0.5 * robot.weights[1]);
+	robot.weights[2] = 0.33 * (learningrate * activationL * revdistL - 
+								forgettingrate * 0.5 * robot.weights[2]);
+	
+	robot.weights[3] = 0.33 * (learningrate * activationL * revdistM - 
+								forgettingrate * 0.5 * robot.weights[3]);
+	robot.weights[4] = 0.33 * (learningrate * activationL * revdistM - 
+								forgettingrate * 0.5 * robot.weights[4]);
+	robot.weights[5] = 0.33 * (learningrate * activationL * revdistM - 
+								forgettingrate * 0.5 * robot.weights[5]);
+	
+	robot.weights[6] = 0.33 * (learningrate * activationL * revdistR - 
+								forgettingrate * 0.5 * robot.weights[6]);
+	robot.weights[7] = 0.33 * (learningrate * activationL * revdistR - 
+								forgettingrate * 0.5 * robot.weights[7]);
+	robot.weights[8] = 0.33 * (learningrate * activationL * revdistR - 
+								forgettingrate * 0.5 * robot.weights[8]);
+
+	
 	if (!(simInfo.curSteps % 10)) { 
 		// console.log("distL: " + distL + "\n" + 
 					// "distM: " + distM + "\n" + 
@@ -635,31 +717,25 @@ function robotMove(robot) {
 					// "touchL: " + touchL + "\n" + 
 					// "touchM: " + touchM + "\n" + 
 					// "touchR: " + touchR + "\n");
+		// console.log("colLayerL: " + colLayerL + "\n" + 
+					// "colLayerM: " + colLayerM + "\n" +
+					// "colLayerR: " + colLayerR);
+		console.log(robot.weights);
 	}
-	var colLayerL  = dac(touchL, 0.5, 0.01, 0.01, distL, distM, distR);
-	var colLayerM  = dac(touchM, 0.01, 0.5, 0.01, distL, distM, distR);
-	var colLayerR  = dac(touchR, 0.01, 0.01, 0.5, distL, distM, distR);	
-	
-	if (!(simInfo.curSteps % 10)) { 
-
-	console.log("colLayerL: " + colLayerL + "\n" + 
-	            "colLayerM: " + colLayerM + "\n" +
-                "colLayerR: " + colLayerR);
+	if(distL < distR){
+		rotate(robot,-0.01);
+	}	
+	if(distM < 2){
+		// /*Robot is in front of a wall ( or block ).
+		// Randomly chooses to turn left or right. */
+		var random = getRandomInt(0,10);
+		if (random % 2 == 1) {
+			rotate(robot,0.20);
+		}
+		else {
+			rotate(robot,-0.20);
+		}
 	}
-	// if(distL < distR){
-		// rotate(robot,-0.01);
-	// }	
-	// if(distM < 2){
-		/*Robot is in front of a wall ( or block ).
-		Randomly chooses to turn left or right. */
-		// var random = getRandomInt(0,10);
-		// if (random % 2 == 1) {
-			// rotate(robot,0.20);
-		// }
-		// else {
-			// rotate(robot,-0.20);
-		// }
-	// }
 };
 
 function plotSensor(context, x = this.x, y = this.y) {
