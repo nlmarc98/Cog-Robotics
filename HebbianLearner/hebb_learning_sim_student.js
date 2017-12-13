@@ -643,13 +643,11 @@ function getRandomInt(min, max) {
 }
 
 function reverseNumber( num,  min,  max) {
+	if(num == "Infinity") { num = 50; }
     return (max + min) - num;
 }
 
 function dac(t, w1, w2, w3, p1, p2, p3){
-	if(p1 == "Infinity"){ p1 = 50; }
-	if(p2 == "Infinity"){ p2 = 50; }
-	if(p3 == "Infinity"){ p3 = 50; }
 	p1 = reverseNumber(p1,0,50);
 	p2 = reverseNumber(p2,0,50);
 	p3 = reverseNumber(p3,0,50);
@@ -684,10 +682,9 @@ function robotMove(robot) {
 	var activationM = activation(colLayerM, threshold);
 	var activationR = activation(colLayerR, threshold);
 	
-	var revdistL = reverseNumber(distL) / 50;
-	var revdistM = reverseNumber(distM) / 50;
-	var revdistR = reverseNumber(distR) / 50;
-	
+	var revdistL = reverseNumber(distL,0,50) / 50;
+	var revdistM = reverseNumber(distM,0,50) / 50;
+	var revdistR = reverseNumber(distR,0,50) / 50;
 	robot.weights[0] = 0.33 * (learningrate * activationL * revdistL - 
 						forgettingrate * 0.5 * robot.weights[0]);
 	robot.weights[1] = 0.33 * (learningrate * activationL * revdistL - 
