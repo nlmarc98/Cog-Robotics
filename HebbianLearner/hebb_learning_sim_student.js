@@ -401,18 +401,17 @@ function senseDistance() {
 };
 
 function senseTouch() {
-  /* Distance touch simulation based on ray casting. Called from sensor
+  /* Touch simulation based on ray casting. Called from sensor
    * object, returns nothing, updates a new reading into this.value.
+   * basically it is a distance sensor, but it return either a 0 or 1
+   * depending on the distance of the object.
+   * 
+   * The touchSensor is not a noisy sensor, because the assignment did not 
+   * specify it should be.
    *
-   * Idea: Cast a ray with a certain length from the sensor, and check
-   *       via collision detection if objects intersect with the ray.
-   *       To determine distance, run a Binary search on ray length.
-   * Note: Sensor ray needs to ignore robot (parts), or start outside of it.
-   *       The latter is easy with the current circular shape of the robots.
-   * Note: Order of tests are optimized by starting with max ray length, and
-   *       then only testing the maximal number of initially resulting objects.
-   * Note: The sensor's "ray" could have any other (convex) shape;
-   *       currently it's just a very thin rectangle.
+   * We consider a touch when the distance to an object is 3 or smaller.
+   * This function will return 1 when this happends.
+   * Otherwise it will return 0.
    */
 
   const context = document.getElementById('arenaHebbbot').getContext('2d');
@@ -634,27 +633,48 @@ function getSensorValById(robot, id) {
   return undefined;  // if not returned yet, id doesn't exist
 };
 
-function getWeightVal(robot){
-	
-}
-
 function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
 function reverseNumber( num,  min,  max) {
-	if(num == "Infinity") { num = 50; }
+	/* 
+		Reverses number num in the interval [min, max].
+		9 in the interval [0,50] would be
+		(50 + 0) - 9 = 41. 
+	*/
+	if(num == "Infinity") { num = 50; };
     return (max + min) - num;
 }
 
+
 function dac(t, w1, w2, w3, p1, p2, p3){
-	p1 = reverseNumber(p1,0,50);
-	p2 = reverseNumber(p2,0,50);
-	p3 = reverseNumber(p3,0,50);
+	/*
+		Compute summed input activations for the collision layer.
+		Based on the Distributed Adaptive Control ( DAC )
+		Found in Lecture 9 ( Hebbian learning for robot control )
+		on Slide 51.
+		
+		t = touchSensor value, either 0 or 1.
+		w1,w2,w3 are the weights of p1,p2,p3.
+		p1,p2,p3 are the proximity layers,
+				 or by other words: the distanceSensors.
+	*/
+	p1 = reverseNumber(p1,0,50); // When a robot is closer to an object
+	p2 = reverseNumber(p2,0,50); // the value will be 50. Furthest away 
+	p3 = reverseNumber(p3,0,50); // to an object will be 0. This makes 
+								 // the hebb learning rules a lot easier
+								 // to program.
+	p1 = p1 / 50; p2 = p2 /50; p3 = p3 / 50; // dividing by 50 results in values between 0 and 1
+											 // instead of values between 0 and 50.
 	return t + w1 * p1/50 + w2 * p2/50 + w3 * p3/50;
 }
 
 function activation(colLayer, threshold) {
+	/* 
+		Activates collision layer colLayer when
+		its value is higher than the threshold.
+	*/
 	return (colLayer >= threshold) ? 1 : 0;
 }
 
@@ -676,7 +696,7 @@ function robotMove(robot) {
 	
 	// Learningrates could be {0, 0.001, 0.01}.
 	var learningrate   = 0.01;
-	var forgettingrate = 0.01;
+	var forgettingrate = 0.0001;
 	
 	var activationL = activation(colLayerL, threshold);
 	var activationM = activation(colLayerM, threshold);
@@ -688,23 +708,23 @@ function robotMove(robot) {
 	robot.weights[0] = 0.33 * (learningrate * activationL * revdistL - 
 						forgettingrate * 0.5 * robot.weights[0]);
 	robot.weights[1] = 0.33 * (learningrate * activationL * revdistL - 
-								forgettingrate * 0.5 * robot.weights[1]);
+								forgettingrate * 0.1 * robot.weights[1]);
 	robot.weights[2] = 0.33 * (learningrate * activationL * revdistL - 
-								forgettingrate * 0.5 * robot.weights[2]);
+								forgettingrate * 0.1 * robot.weights[2]);
 	
 	robot.weights[3] = 0.33 * (learningrate * activationL * revdistM - 
-								forgettingrate * 0.5 * robot.weights[3]);
+								forgettingrate * 0.1 * robot.weights[3]);
 	robot.weights[4] = 0.33 * (learningrate * activationL * revdistM - 
-								forgettingrate * 0.5 * robot.weights[4]);
+								forgettingrate * 0.1 * robot.weights[4]);
 	robot.weights[5] = 0.33 * (learningrate * activationL * revdistM - 
-								forgettingrate * 0.5 * robot.weights[5]);
+								forgettingrate * 0.1 * robot.weights[5]);
 	
 	robot.weights[6] = 0.33 * (learningrate * activationL * revdistR - 
-								forgettingrate * 0.5 * robot.weights[6]);
+								forgettingrate * 0.1 * robot.weights[6]);
 	robot.weights[7] = 0.33 * (learningrate * activationL * revdistR - 
-								forgettingrate * 0.5 * robot.weights[7]);
+								forgettingrate * 0.1 * robot.weights[7]);
 	robot.weights[8] = 0.33 * (learningrate * activationL * revdistR - 
-								forgettingrate * 0.5 * robot.weights[8]);
+								forgettingrate * 0.1 * robot.weights[8]);
 
 	
 	if (!(simInfo.curSteps % 10)) { 
