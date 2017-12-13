@@ -138,7 +138,7 @@ RobotInfo = [
 ];
 
 simInfo = {
-  numRobots: 5, // number of robots in simulation
+  numRobots: 1, // number of robots in simulation
   maxSteps: 20000,  // maximal number of simulation steps to run
   airDrag: 0.1,  // "air" friction of enviroment; 0 is vacuum, 0.9 is molasses
   boxFric: 0.045, // 
@@ -613,29 +613,53 @@ function getRandomInt(min, max) {
   return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+function dac(t, w1, w2, w3, p1, p2, p3){
+	if(p1 == "Infinity"){ p1 = 50; }
+	if(p2 == "Infinity"){ p2 = 50; }
+	if(p3 == "Infinity"){ p3 = 50; }
+	return t + w1 * p1/50 + w2 * p2/50 + w3 * p3/50;
+}
 function robotMove(robot) {
 // This function is called each timestep and should be used to move the robots
-	drive(robot,0.0001);
-	distL = getSensorValById(robot,'distL');
-	distR = getSensorValById(robot,'distR');
-	distM = getSensorValById(robot,'distM');
-	if(distL < distR){
-		rotate(robot,-0.01);
+	//drive(robot,0.0001);
+	var distL = getSensorValById(robot,'distL');
+	var distR = getSensorValById(robot,'distR');
+	var distM = getSensorValById(robot,'distM');
+	var touchL = getSensorValById(robot,'touchL');
+	var touchM = getSensorValById(robot,'touchM');
+	var touchR = getSensorValById(robot,'touchR');	
+	if (!(simInfo.curSteps % 10)) { 
+		// console.log("distL: " + distL + "\n" + 
+					// "distM: " + distM + "\n" + 
+					// "distR: " + distR + "\n" + 
+					// "touchL: " + touchL + "\n" + 
+					// "touchM: " + touchM + "\n" + 
+					// "touchR: " + touchR + "\n");
 	}
-	else {
-	}
+	var colLayerL  = dac(touchL, 0.5, 0.01, 0.01, distL, distM, distR);
+	var colLayerM  = dac(touchM, 0.01, 0.5, 0.01, distL, distM, distR);
+	var colLayerR  = dac(touchR, 0.01, 0.01, 0.5, distL, distM, distR);	
 	
-	if(distM < 2){
-		// Robot is in front of a wall ( or block ).
-		// Randomly chooses to turn left or right.
-		var random = getRandomInt(0,10);
-		if (random % 2 == 1) {
-			// rotate(robot,0.20);
-		}
-		else {
-			// rotate(robot,-0.20);
-		}
+	if (!(simInfo.curSteps % 10)) { 
+
+	console.log("colLayerL: " + colLayerL + "\n" + 
+	            "colLayerM: " + colLayerM + "\n" +
+                "colLayerR: " + colLayerR);
 	}
+	// if(distL < distR){
+		// rotate(robot,-0.01);
+	// }	
+	// if(distM < 2){
+		/*Robot is in front of a wall ( or block ).
+		Randomly chooses to turn left or right. */
+		// var random = getRandomInt(0,10);
+		// if (random % 2 == 1) {
+			// rotate(robot,0.20);
+		// }
+		// else {
+			// rotate(robot,-0.20);
+		// }
+	// }
 };
 
 function plotSensor(context, x = this.x, y = this.y) {
@@ -825,6 +849,22 @@ function repaintBay() {
     }
     document.getElementById('SensorLabel').innerHTML = sensorString;
   }
+  
+  if (!(simInfo.curSteps % 5)) {
+	  
+	  var infoString = '<br> number of blocks:';
+	  // console.log(simInfo.world.composites[0].bodies[0].bounds.min);
+	  var boxes = simInfo.world.composites[0].bodies;
+	  var walls = getWalls();
+	  //console.log(walls);
+	  infoString += boxes.length;
+	  
+	  var coordinates = simInfo.world.composites[0].bodies[0].position;
+	  //console.log(coordinates);
+	  infoString += '<br> x,y block 1: (' + coordinates.x.toFixed(2) + ',' + coordinates.y.toFixed(2) + ')'; 
+	  //console.log(getBoxCenter(simInfo.world.composites[0].bodies[0]));
+	document.getElementById('infoAreaText').innerHTML = infoString;
+  }
 }
 
 function setRobotNumber(newValue) {
@@ -859,6 +899,18 @@ function setRobotNumber(newValue) {
   }
 }
 
+function getWalls(){
+	var objects = simInfo.world.bodies;
+	var walls = [];
+	for (i = 0; i < objects.length; i++){
+		var object = objects[i];
+		//console.log(object);
+		if ( object.role == 'wall') {
+			walls.push(object);
+		}
+	}
+	return walls;
+}
 
 function padnumber(number, size) {
   if (number == Infinity) {
