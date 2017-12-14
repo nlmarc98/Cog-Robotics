@@ -45,9 +45,8 @@ RobotInfo = [
 	  lookAngle: 0, id: 'touchM', parent: null, value: null},
     ],
 	// Starting weights. 
-	weights: [0.5, 0.01, 0.01,
-			  0.01, 0.5, 0.01,
-			  0.01, 0.01, 0.5]
+	weights_dist: [0.01, 0.01, 0.01],
+	weights_touch:[0.5, 0.5, 0.5]
   },
   // Second Robot
   {body: null, color: "blue", init: {x: 400, y: 50, angle: 2},
@@ -72,9 +71,8 @@ RobotInfo = [
 	  lookAngle: 0, id: 'touchM', parent: null, value: null},
     ],
 	// Starting weights. 
-	weights: [0.5, 0.01, 0.01,
-			  0.01, 0.5, 0.01,
-			  0.01, 0.01, 0.5]
+	weights_dist: [0.01, 0.01, 0.01],
+	weights_touch:[0.5, 0.5, 0.5]
   },
   // Third Robot
   {body: null, color: "orange", init: {x: 50, y: 50, angle: 1},
@@ -99,9 +97,8 @@ RobotInfo = [
 	  lookAngle: 0, id: 'touchM', parent: null, value: null},
     ],
 	// Starting weights. 
-	weights: [0.5, 0.01, 0.01,
-			  0.01, 0.5, 0.01,
-			  0.01, 0.01, 0.5]
+	weights_dist: [0.01, 0.01, 0.01],
+	weights_touch:[0.5, 0.5, 0.5]
   },
   // Fourth Robot
   {body: null,color: "green", init: {x: 400, y: 400, angle: 2*Math.PI/2},
@@ -126,9 +123,8 @@ RobotInfo = [
 	  lookAngle: 0, id: 'touchM', parent: null, value: null},
     ],
 	// Starting weights. 
-	weights: [0.5, 0.01, 0.01,
-			  0.01, 0.5, 0.01,
-			  0.01, 0.01, 0.5]
+	weights_dist: [0.01, 0.01, 0.01],
+	weights_touch:[0.5, 0.5, 0.5]
   },
   // Five Robots
   {body: null, color: "black", init: {x: 225, y: 50, angle: 2},
@@ -153,9 +149,8 @@ RobotInfo = [
 	  lookAngle: 0, id: 'touchM', parent: null, value: null},
     ],
 	// Starting weights. 
-	weights: [0.5, 0.01, 0.01,
-			  0.01, 0.5, 0.01,
-			  0.01, 0.01, 0.5]
+	weights_dist: [0.01, 0.01, 0.01],
+	weights_touch:[0.5, 0.5, 0.5]
   }
 ];
 
@@ -185,7 +180,8 @@ simInfo = {
 
 robots = new Array();
 sensors = new Array();
-weights = new Array();
+weights_dist = new Array();
+weights_touch = new Array();
 
 function init() {  // called once when loading HTML file
   const robotBay = document.getElementById("bayHebbbot"),
@@ -556,7 +552,8 @@ function loadSensorInfo(sensorInfo) {
 function loadBay(robot) {
   simInfo.bayRobot = robot;
   sensors = new Array();
-  weights = new Array();
+  weights_dist = new Array();
+  weights_touch = new Array();
   const robotBay = document.getElementById("bayHebbbot");
   const bCenter = {x: robotBay.width/2,
                    y: robotBay.height/2},
@@ -600,7 +597,8 @@ function InstantiateRobot(robotInfo) {
 
   // instantiate its sensors
   this.sensors = robotInfo.sensors;
-  this.weights = robotInfo.weights;
+  this.weights_dist = robotInfo.weights_dist;
+  this.weights_touch = robotInfo.weights_touch;
   for (var ss = 0; ss < this.sensors.length; ++ss) {
     this.sensors[ss].parent = this;
   }
@@ -660,14 +658,12 @@ function dac(t, w1, w2, w3, p1, p2, p3){
 		p1,p2,p3 are the proximity layers,
 				 or by other words: the distanceSensors.
 	*/
-	p1 = reverseNumber(p1,0,50); // When a robot is closer to an object
-	p2 = reverseNumber(p2,0,50); // the value will be 50. Furthest away 
-	p3 = reverseNumber(p3,0,50); // to an object will be 0. This makes 
-								 // the hebb learning rules a lot easier
-								 // to program.
-	p1 = p1 / 50; p2 = p2 /50; p3 = p3 / 50; // dividing by 50 results in values between 0 and 1
-											 // instead of values between 0 and 50.
 	return t + w1 * p1/50 + w2 * p2/50 + w3 * p3/50;
+}
+
+function dacV2 (dist, touch, w_dist, w_touch) {
+	dist = reverseNumber(dist,0,50) / 50;
+	return dist * w_dist + touch * w_touch;
 }
 
 function activation(colLayer, threshold) {
@@ -678,53 +674,84 @@ function activation(colLayer, threshold) {
 	return (colLayer >= threshold) ? 1 : 0;
 }
 
+function difference(a,b,c) { 
+	return Math.abs( Math.abs( a - b ), c );;
+}
+
 function robotMove(robot) {
 // This function is called each timestep and should be used to move the robots
 	drive(robot,0.0001);
 	var distL =  getSensorValById(robot,'distL');
-	var distR =  getSensorValById(robot,'distR');
 	var distM =  getSensorValById(robot,'distM');
+	var distR =  getSensorValById(robot,'distR');
+
 	var touchL = getSensorValById(robot,'touchL');
 	var touchM = getSensorValById(robot,'touchM');
 	var touchR = getSensorValById(robot,'touchR');	
 	
-	var colLayerL  = dac(touchL, robot.weights[0], robot.weights[1], robot.weights[2], distL, distM, distR);
-	var colLayerM  = dac(touchM, robot.weights[3], robot.weights[4], robot.weights[5], distL, distM, distR);
-	var colLayerR  = dac(touchR, robot.weights[6], robot.weights[7], robot.weights[8], distL, distM, distR);	
-	
+	var distL_r = reverseNumber(distL,0,50); // When a robot is closer to an object
+	var distM_r = reverseNumber(distM,0,50); // the value will be 50. Furthest away 
+	var distR_r = reverseNumber(distR,0,50); // to an object will be 0. This makes 
+									   // the hebb learning rules a lot easier
+								       // to program.
+
+	// dividing by 50 results in values between 0 and 1 instead of values between 0 and 50.
+	distL_r = distL_r / 50; distM_r = distM_r /50; distR_r = distR_r / 50;
+
 	var threshold = 0.4;
 	
 	// Learningrates could be {0, 0.001, 0.01}.
 	var learningrate   = 0.01;
 	var forgettingrate = 0.0001;
+
+	var outL = dacV2(distL_r,robot.weights_dist[0], touchL, robot.weights_touch[0]);
+	var outM = dacV2(distM_r,robot.weights_dist[1], touchM, robot.weights_touch[1]);
+	var outR = dacV2(distR_r,robot.weights_dist[2], touchR, robot.weights_touch[2]);
 	
-	var activationL = activation(colLayerL, threshold);
-	var activationM = activation(colLayerM, threshold);
-	var activationR = activation(colLayerR, threshold);
 	
-	var revdistL = reverseNumber(distL,0,50) / 50;
-	var revdistM = reverseNumber(distM,0,50) / 50;
-	var revdistR = reverseNumber(distR,0,50) / 50;
-	robot.weights[0] = 0.33 * (learningrate * activationL * revdistL - 
-						forgettingrate * 0.5 * robot.weights[0]);
-	robot.weights[1] = 0.33 * (learningrate * activationL * revdistL - 
-								forgettingrate * 0.1 * robot.weights[1]);
-	robot.weights[2] = 0.33 * (learningrate * activationL * revdistL - 
-								forgettingrate * 0.1 * robot.weights[2]);
+	var activationL = activation(outL, threshold);
+	var activationM = activation(outM, threshold);
+	var activationR = activation(outR, threshold);
 	
-	robot.weights[3] = 0.33 * (learningrate * activationL * revdistM - 
-								forgettingrate * 0.1 * robot.weights[3]);
-	robot.weights[4] = 0.33 * (learningrate * activationL * revdistM - 
-								forgettingrate * 0.1 * robot.weights[4]);
-	robot.weights[5] = 0.33 * (learningrate * activationL * revdistM - 
-								forgettingrate * 0.1 * robot.weights[5]);
+	robot.weights_dist[0] = robot.weights_dist[0] + learningrate * activationL * distL_r;
+	robot.weights_dist[1] = robot.weights_dist[1] + learningrate * activationM * distM_r;
+	robot.weights_dist[2] = robot.weights_dist[2] + learningrate * activationR * distL_r;
 	
-	robot.weights[6] = 0.33 * (learningrate * activationL * revdistR - 
-								forgettingrate * 0.1 * robot.weights[6]);
-	robot.weights[7] = 0.33 * (learningrate * activationL * revdistR - 
-								forgettingrate * 0.1 * robot.weights[7]);
-	robot.weights[8] = 0.33 * (learningrate * activationL * revdistR - 
-								forgettingrate * 0.1 * robot.weights[8]);
+	robot.weights_touch[0] = robot.weights_touch[0] + learningrate * activationL * touchL;
+	robot.weights_touch[1] = robot.weights_touch[1] + learningrate * activationM * touchL;
+	robot.weights_touch[2] = robot.weights_touch[2] + learningrate * activationR * touchL;
+	// var colLayerL  = dac(touchL, robot.weights[0], robot.weights[1], robot.weights[2], distL, distM, distR);
+	// var colLayerM  = dac(touchM, robot.weights[3], robot.weights[4], robot.weights[5], distL, distM, distR);
+	// var colLayerR  = dac(touchR, robot.weights[6], robot.weights[7], robot.weights[8], distL, distM, distR);	
+	
+	// var activationL = activation(colLayerL, threshold);
+	// var activationM = activation(colLayerM, threshold);
+	// var activationR = activation(colLayerR, threshold);
+	
+	// var revdistL = reverseNumber(distL,0,50) / 50;
+	// var revdistM = reverseNumber(distM,0,50) / 50;
+	// var revdistR = reverseNumber(distR,0,50) / 50;
+	
+	// robot.weights[0] = 0.33 * (learningrate * activationL * revdistL - 
+						// forgettingrate * 0.5 * robot.weights[0]);
+	// robot.weights[1] = 0.33 * (learningrate * activationL * revdistL - 
+								// forgettingrate * 0.1 * robot.weights[1]);
+	// robot.weights[2] = 0.33 * (learningrate * activationL * revdistL - 
+								// forgettingrate * 0.1 * robot.weights[2]);
+	
+	// robot.weights[3] = 0.33 * (learningrate * activationL * revdistM - 
+								// forgettingrate * 0.1 * robot.weights[3]);
+	// robot.weights[4] = 0.33 * (learningrate * activationL * revdistM - 
+								// forgettingrate * 0.1 * robot.weights[4]);
+	// robot.weights[5] = 0.33 * (learningrate * activationL * revdistM - 
+								// forgettingrate * 0.1 * robot.weights[5]);
+	
+	// robot.weights[6] = 0.33 * (learningrate * activationL * revdistR - 
+								// forgettingrate * 0.1 * robot.weights[6]);
+	// robot.weights[7] = 0.33 * (learningrate * activationL * revdistR - 
+								// forgettingrate * 0.1 * robot.weights[7]);
+	// robot.weights[8] = 0.33 * (learningrate * activationL * revdistR - 
+								// forgettingrate * 0.1 * robot.weights[8]);
 
 	
 	if (!(simInfo.curSteps % 10)) { 
@@ -737,10 +764,14 @@ function robotMove(robot) {
 		// console.log("colLayerL: " + colLayerL + "\n" + 
 					// "colLayerM: " + colLayerM + "\n" +
 					// "colLayerR: " + colLayerR);
-		console.log(robot.weights);
+		console.log("outL: " + outL + "\n" + 
+					 "outM: " + outM + "\n" +
+					 "outR: " + outR);
+		console.log("weights_dist: " + robot.weights_dist + "\n" + 
+					"weights_touch: " + robot.weights_touch);
 	}
 	if(distL < distR){
-		rotate(robot,-0.01);
+		rotate(robot,(robot.weights_dist[0] + robot.weights_dist[2]) / 100);
 	}	
 	if(distM < 2){
 		// /*Robot is in front of a wall ( or block ).
