@@ -17,7 +17,13 @@
  * GNU General Public License for more details.
  *
  * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <http://www.gnu.org/licenses/>.
+ * along with this program.  If not, see <http://www.gnu.org/licenses/>. 
+ * 
+ * Authors:
+ * Marc-William Verwoert (S4718801)
+ * Niels van Drueten (S4496604)
+ * Niels Wolters (S4633873)
+ * Benjamin Robijn (S4822331)
  */
 
 // Description of robot(s), and attached sensor(s) used by InstantiateRobot()
@@ -646,7 +652,7 @@ function reverseNumber( num,  min,  max) {
 }
 
 
-function dac(t, w1, w2, w3, p1, p2, p3){
+function dac (dist, touch, w_dist, w_touch) {
 	/*
 		Compute summed input activations for the collision layer.
 		Based on the Distributed Adaptive Control ( DAC )
@@ -658,13 +664,9 @@ function dac(t, w1, w2, w3, p1, p2, p3){
 		p1,p2,p3 are the proximity layers,
 				 or by other words: the distanceSensors.
 	*/
-	return t + w1 * p1/50 + w2 * p2/50 + w3 * p3/50;
-}
-
-function dacV2 (dist, touch, w_dist, w_touch) {
-	dist = reverseNumber(dist,0,50) / 50;
 	return dist * w_dist + touch * w_touch;
 }
+
 
 function activation(colLayer, threshold) {
 	/* 
@@ -692,8 +694,8 @@ function robotMove(robot) {
 	var distL_r = reverseNumber(distL,0,50); // When a robot is closer to an object
 	var distM_r = reverseNumber(distM,0,50); // the value will be 50. Furthest away 
 	var distR_r = reverseNumber(distR,0,50); // to an object will be 0. This makes 
-									   // the hebb learning rules a lot easier
-								       // to program.
+											 // the hebb learning rules a lot easier
+											 // to program.
 
 	// dividing by 50 results in values between 0 and 1 instead of values between 0 and 50.
 	distL_r = distL_r / 50; distM_r = distM_r /50; distR_r = distR_r / 50;
@@ -704,9 +706,9 @@ function robotMove(robot) {
 	var learningrate   = 0.01;
 	var forgettingrate = 0.0001;
 
-	var outL = dacV2(distL_r,robot.weights_dist[0], touchL, robot.weights_touch[0]);
-	var outM = dacV2(distM_r,robot.weights_dist[1], touchM, robot.weights_touch[1]);
-	var outR = dacV2(distR_r,robot.weights_dist[2], touchR, robot.weights_touch[2]);
+	var outL = dac(distL_r,robot.weights_dist[0], touchL, robot.weights_touch[0]);
+	var outM = dac(distM_r,robot.weights_dist[1], touchM, robot.weights_touch[1]);
+	var outR = dac(distR_r,robot.weights_dist[2], touchR, robot.weights_touch[2]);
 	
 	
 	var activationL = activation(outL, threshold);
@@ -720,62 +722,17 @@ function robotMove(robot) {
 	robot.weights_touch[0] = robot.weights_touch[0] + learningrate * activationL * touchL;
 	robot.weights_touch[1] = robot.weights_touch[1] + learningrate * activationM * touchL;
 	robot.weights_touch[2] = robot.weights_touch[2] + learningrate * activationR * touchL;
-	// var colLayerL  = dac(touchL, robot.weights[0], robot.weights[1], robot.weights[2], distL, distM, distR);
-	// var colLayerM  = dac(touchM, robot.weights[3], robot.weights[4], robot.weights[5], distL, distM, distR);
-	// var colLayerR  = dac(touchR, robot.weights[6], robot.weights[7], robot.weights[8], distL, distM, distR);	
 	
-	// var activationL = activation(colLayerL, threshold);
-	// var activationM = activation(colLayerM, threshold);
-	// var activationR = activation(colLayerR, threshold);
-	
-	// var revdistL = reverseNumber(distL,0,50) / 50;
-	// var revdistM = reverseNumber(distM,0,50) / 50;
-	// var revdistR = reverseNumber(distR,0,50) / 50;
-	
-	// robot.weights[0] = 0.33 * (learningrate * activationL * revdistL - 
-						// forgettingrate * 0.5 * robot.weights[0]);
-	// robot.weights[1] = 0.33 * (learningrate * activationL * revdistL - 
-								// forgettingrate * 0.1 * robot.weights[1]);
-	// robot.weights[2] = 0.33 * (learningrate * activationL * revdistL - 
-								// forgettingrate * 0.1 * robot.weights[2]);
-	
-	// robot.weights[3] = 0.33 * (learningrate * activationL * revdistM - 
-								// forgettingrate * 0.1 * robot.weights[3]);
-	// robot.weights[4] = 0.33 * (learningrate * activationL * revdistM - 
-								// forgettingrate * 0.1 * robot.weights[4]);
-	// robot.weights[5] = 0.33 * (learningrate * activationL * revdistM - 
-								// forgettingrate * 0.1 * robot.weights[5]);
-	
-	// robot.weights[6] = 0.33 * (learningrate * activationL * revdistR - 
-								// forgettingrate * 0.1 * robot.weights[6]);
-	// robot.weights[7] = 0.33 * (learningrate * activationL * revdistR - 
-								// forgettingrate * 0.1 * robot.weights[7]);
-	// robot.weights[8] = 0.33 * (learningrate * activationL * revdistR - 
-								// forgettingrate * 0.1 * robot.weights[8]);
-
-	
-	if (!(simInfo.curSteps % 10)) { 
-		// console.log("distL: " + distL + "\n" + 
-					// "distM: " + distM + "\n" + 
-					// "distR: " + distR + "\n" + 
-					// "touchL: " + touchL + "\n" + 
-					// "touchM: " + touchM + "\n" + 
-					// "touchR: " + touchR + "\n");
-		// console.log("colLayerL: " + colLayerL + "\n" + 
-					// "colLayerM: " + colLayerM + "\n" +
-					// "colLayerR: " + colLayerR);
-		console.log("outL: " + outL + "\n" + 
-					 "outM: " + outM + "\n" +
-					 "outR: " + outR);
-		console.log("weights_dist: " + robot.weights_dist + "\n" + 
-					"weights_touch: " + robot.weights_touch);
+	if (!(simInfo.curSteps % 2000)) { 
+		console.log("Steps: " + simInfo.curSteps + "\n\tDistance Weights (Left, Middle, Right): " + robot.weights_dist + "\n" + 
+					"\tTouch Weights (Left, Middle, Right): " + robot.weights_touch);
 	}
 	if(distL < distR){
-		rotate(robot,(robot.weights_dist[0] + robot.weights_dist[2]) / 100);
+		rotate(robot,(robot.weights_dist[0] - robot.weights_dist[2]) / 100);
 	}	
 	if(distM < 2){
-		// /*Robot is in front of a wall ( or block ).
-		// Randomly chooses to turn left or right. */
+		// Robot is in front of a wall ( or block ).
+		// Randomly chooses to turn left or right.
 		var random = getRandomInt(0,10);
 		if (random % 2 == 1) {
 			rotate(robot,0.20);
@@ -973,22 +930,7 @@ function repaintBay() {
     }
     document.getElementById('SensorLabel').innerHTML = sensorString;
   }
-  
-  if (!(simInfo.curSteps % 5)) {
-	  
-	  var infoString = '<br> number of blocks:';
-	  // console.log(simInfo.world.composites[0].bodies[0].bounds.min);
-	  var boxes = simInfo.world.composites[0].bodies;
-	  var walls = getWalls();
-	  //console.log(walls);
-	  infoString += boxes.length;
-	  
-	  var coordinates = simInfo.world.composites[0].bodies[0].position;
-	  //console.log(coordinates);
-	  infoString += '<br> x,y block 1: (' + coordinates.x.toFixed(2) + ',' + coordinates.y.toFixed(2) + ')'; 
-	  //console.log(getBoxCenter(simInfo.world.composites[0].bodies[0]));
-	document.getElementById('infoAreaText').innerHTML = infoString;
-  }
+
 }
 
 function setRobotNumber(newValue) {
@@ -1021,19 +963,6 @@ function setRobotNumber(newValue) {
         return true;
     };
   }
-}
-
-function getWalls(){
-	var objects = simInfo.world.bodies;
-	var walls = [];
-	for (i = 0; i < objects.length; i++){
-		var object = objects[i];
-		//console.log(object);
-		if ( object.role == 'wall') {
-			walls.push(object);
-		}
-	}
-	return walls;
 }
 
 function padnumber(number, size) {
